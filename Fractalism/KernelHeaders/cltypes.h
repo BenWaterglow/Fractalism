@@ -1,7 +1,7 @@
 #ifndef _CLTYPES_H_
 #define _CLTYPES_H_
 
-#include "number_systems.h"
+#include "real.h"
 
 #if defined(__cplusplus) || defined(__OPENCL_CPP_VERSION__)
 extern "C" {
@@ -12,10 +12,7 @@ extern "C" {
 #error "Preprocessor macro MAX_NUMBER_SYSTEM_SIZE is not defined."
 #endif
 
-typedef union __attribute__((packed)) number {
-#define X(extension_method, number_system, element_system) number_system number_system;
-  NUMBER_SYSTEMS
-#undef X
+typedef struct __attribute__((packed)) number {
   real raw[MAX_NUMBER_SYSTEM_SIZE];
 } number;
 

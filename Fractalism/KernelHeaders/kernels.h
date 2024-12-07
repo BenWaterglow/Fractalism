@@ -10,6 +10,7 @@
 #endif
 
 #include "spectral_color.h"
+#include "number_systems.h"
 #include "cltypes.h"
 
 #if defined(__cplusplus) || defined(__OPENCL_CPP_VERSION__)
@@ -107,13 +108,15 @@ kernel void name##_##number_system( \
     i = 0; \
   } else { \
     work_store z_last = *store_item.p; \
-    z = number_system_type##_from_##number_system(z_last.value.number_system); \
+    z = number_system_type##_from_raw(z_last.value.raw, 0); \
     i = z_last.i; \
   } \
   for (;(i < max_iterations) && (condition); i++) { \
     function; \
   } \
-  *store_item.p = (work_store){{.number_system=number_system##_from_##number_system_type(z)}, i}; \
+  number result = (number){{0.0}}; \
+  number_system_type##_to_raw(z, result.raw, 0);\
+  *store_item.p = (work_store){result, i}; \
   finish; \
 }
 
@@ -163,7 +166,7 @@ create_escape_and_translated_kernels( \
 #define create_dynamical_kernels(function, escape, number_system, number_system_type) \
 create_escape_and_translated_kernels( \
     dynamical, \
-    number_system_type##_from_##number_system(param.number_system), \
+    number_system_type##_from_raw(param.raw, 0), \
     viewspace_point_to_##number_system(view, store_item.item), \
     function, \
     escape, \
@@ -184,11 +187,11 @@ static inline number_system_type viewspace_point_to_##number_system(viewspace vi
   apply_view_mapping_element(raw, view.zoom, view.mapping.x, item.location.x, item.dimensions.width); \
   apply_view_mapping_element(raw, view.zoom, view.mapping.y, item.location.y, item.dimensions.height); \
   apply_view_mapping_element(raw, view.zoom, view.mapping.z, item.location.z, item.dimensions.depth); \
-  return add_##number_system(number_system_type##_from_raw(raw, 1), number_system_type##_from_##number_system(view.center.number_system)); \
+  return add_##number_system(number_system_type##_from_raw(raw, 1), number_system_type##_from_raw(view.center.raw, 0)); \
 } \
 static inline int4 number_system##_to_viewspace_point(viewspace view, work_item item, number_system_type point) { \
   real raw[sizeof(((number){}).raw) + 1] = {0.0}; \
-  number_system_type##_to_raw(sub_##number_system(point, number_system_type##_from_##number_system(view.center.number_system)), raw, 1); \
+  number_system_type##_to_raw(sub_##number_system(point, number_system_type##_from_raw(view.center.raw, 0)), raw, 1); \
   (int4)( \
     reverse_view_mapping_element(raw, view.zoom, view.mapping.x, item.dimensions.width), \
     reverse_view_mapping_element(raw, view.zoom, view.mapping.y, item.dimensions.height), \

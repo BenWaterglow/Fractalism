@@ -86,14 +86,18 @@ cl::Program GPUContext::buildProgram(const char* function, const char* numberSys
   try {
     program = cl::Program(clCtx, utils::format(R"SRC(
       #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+      #define CL_DEVICE_MAX_MEM_ALLOC_SIZE %d
+      #define MAX_NUMBER_SYSTEM_SIZE %d
+      #define ESCAPE_VALUE %f
+      #define NUMBER_SYSTEMS %s
       #define KERNEL_FUNCTION(add, sub, mul, sqr, scale, modulus_sq) %s
       #include "kernels.h")SRC",
-      function).get());
-    program.build(utils::format("-DCL_DEVICE_MAX_MEM_ALLOC_SIZE=%d -DNUMBER_SYSTEMS=\"%s\" -DMAX_NUMBER_SYSTEM_SIZE=%d -DESCAPE_VALUE=%f -I Kernels",
       maxMemAllocSize,
-      numberSystemDefinitions,
       maxNumberSystemSize,
-      escapeValue).get());
+      escapeValue,
+      numberSystemDefinitions,
+      function).get());
+    program.build("-I KernelHeaders");
     writeBuildLog(device, program);
   } catch (const cl::Error& e) {
     if (e.err() == CL_BUILD_PROGRAM_FAILURE) {

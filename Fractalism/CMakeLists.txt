@@ -67,9 +67,9 @@ add_custom_target(copy_shaders
 
 add_custom_target(copy_kernels
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/Kernels
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/Kernels
-    COMMENT "Copying kernels")
+        ${CMAKE_CURRENT_SOURCE_DIR}/KernelHeaders
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/KernelHeaders
+    COMMENT "Copying kernel headers")
 
 add_dependencies(${PROJECT_NAME} copy_shaders copy_kernels)
 
