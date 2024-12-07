@@ -46,8 +46,8 @@ struct Uniforms {
     static constexpr auto shininess = specular.next<float>;
   };
   struct light {
-    static constexpr auto position = material::shininess.next<glm::vec3>;
-    static constexpr auto ambient = position.next<glm::vec3>;
+    static constexpr auto direction = material::shininess.next<glm::vec3>;
+    static constexpr auto ambient = direction.next<glm::vec3>;
     static constexpr auto diffuse = ambient.next<glm::vec3>;
     static constexpr auto specular = diffuse.next<glm::vec3>;
   };
@@ -167,7 +167,7 @@ void GLRenderer3D::doRender(int width, int height) {
   Uniforms::material::specular = glm::vec3(1.0f, 1.0f, 1.0f);
   Uniforms::material::shininess = 10.0f;
 
-  Uniforms::light::position = glm::vec3(inverseView * glm::vec4(glm::vec3(1.2f, 1.0f, 2.0f), 0.0f));
+  Uniforms::light::direction = inverseView * glm::vec4(1.2f, 1.0f, 2.0f, 0.0f);
   Uniforms::light::ambient = glm::vec3(0.5f, 0.5f, 0.5f);
   Uniforms::light::diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
   Uniforms::light::specular = glm::vec3(1.0f, 1.0f, 1.0f);
