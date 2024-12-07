@@ -1,22 +1,13 @@
-﻿----------------------------------------------------------------------------
-
-# Ray-Marching algorithm
-
-----------------------------------------------------------------------------
+﻿# Ray-Marching algorithm
 
 ## Overview
 
-----------------------------------------------------------------------------
-
 We want to find the correct ray-marching path through the render
-volume in a way that avoids non-uniform flow control and the resulting
-elimiation of derivatives for accurate texture sampling.
-
-----------------------------------------------------------------------------
+volume in a way that avoids non-uniform flow control as much as possible.
+We would like to ensure the algorithm does only as much work as needed for
+high quality results.
 
 ## Definitions and parameters
-
-----------------------------------------------------------------------------
 
 The render volume is set as an axis-aligned bounding cube, centered at
 the origin, with side length of 1.0. This means the vertices are all
@@ -33,23 +24,21 @@ render volume. It is supplied as an out param from the vertex shader.
 The eyePosition uniform is the viewing point in worldspace coordinates.
 This is the "base" of the viewing vector.
 
-----------------------------------------------------------------------------
-
 ## The algorithm
 
-----------------------------------------------------------------------------
-
-Let:  
-* 𝘋 be the rendering volume,  
-* 𝘤₊ be the maximum vertices of 𝘋,  
-* 𝘤₋ be the minimum vertices of 𝘋,  
-* 𝙑 = eyePosition be the point of view,  
-* 𝙋 = worldspacePostion be a point on interest on 𝘋.
+Let 𝘋 be the rendering volume,  
+𝘤₊ be the maximum vertices of 𝘋,  
+𝘤₋ be the minimum vertices of 𝘋,  
+𝙑 = eyePosition be the point of view,  
+𝙋 = worldspacePostion be a point on interest on 𝘋.
 
 Let 𝙙 = 𝙋-𝙑 be the unnormalized viewing direction vector. To "march"
 along this direction, we parameterize 𝙙 using the vector-valued
-function 𝙧(𝜆) = 𝙑+𝜆𝙙 = 𝙑+𝜆(𝙋-𝙑). Note that 𝙧(0) = 𝙑, 𝙧(1) = 𝙋. Also
-note that, component-wise, 𝙧ₙ(𝜆)=𝙑ₙ+𝜆(𝙋ₙ-𝙑ₙ) ∀𝘯∈(𝘹, 𝘺, 𝘻).
+function 𝙧(𝜆) = 𝙑+𝜆𝙙 = 𝙑+𝜆(𝙋-𝙑). 
+> [!NOTE]  
+> Note that 𝙧(0) = 𝙑, 𝙧(1) = 𝙋.
+>
+>Also note that, component-wise, 𝙧ₙ(𝜆)=𝙑ₙ+𝜆(𝙋ₙ-𝙑ₙ) ∀𝘯∈(𝘹, 𝘺, 𝘻).
 
 Let 𝘍ₛₙ : 𝒗 ↦ 𝒗ₙ=𝘤ₛ, 𝘴∈(+, -), 𝘯∈(𝘹, 𝘺, 𝘻) be equations defining the
 infinite planes collinear with the faces of 𝘋.
@@ -135,7 +124,7 @@ too small, the value that should be 1.0 may be spurriously included,
 considering the potential floating-point error of up to 2.5 ULP.
 Therefore, setting 𝜀 = 4 ULP for the value of 𝙙 should suffice:[^1]
 
-```
+```GLSL
 ivec3 exp;
 frexp(lambdaMax, exp);
 vec3 epsilonMax = 4.0 * ldexp(vec3(FLT_EPSILON), max(exp - 1, ivec3(FLT_MIN_EXP)));
@@ -144,16 +133,17 @@ vec3 epsilonMin = 4.0 * ldexp(vec3(FLT_EPSILON), max(exp - 1, ivec3(FLT_MIN_EXP)
 ```
 
 Now that we have 𝞴₊′ and 𝞴₋′, we find our target value:
-𝛾 = min(𝞴₊′.x, min(𝞴₊′.y, min(𝞴₊′.z, min(𝞴₋′.x, min(𝞴₋′.y, 𝞴₋′.z)))));
-
+```GLSL
+float gamma = min(lambdaMax.x, min(lambdaMax.y, min(lambdaMax.z, min(lambdaMin.x, min(lambdaMin.y, lambdaMin.z)))));
+```
 To map 𝘋 to the texture3D data, let 𝙑′ = 𝙑 - 𝘤₋, 𝙧₁ = 𝙋 - 𝘤₋,
 and 𝙧₂ = 𝙑′ + 𝛾𝙙. [^2]
 
 To "march" down the ray, we interpolate between 𝙧₁ and 𝙧₂ at regular
-intervals, taking a texture sample at each step. For this application,
-2 samples per texel was chosen, so the step size will be 
-1 / (||𝙧₂ - 𝙧₁|| * 2 * textureSize). Successive adding may be faster,
-but we will need to interpolate between derivatives of 𝙧₁ and 𝙧₂ anyway.
+intervals, taking a texture sample at each step. To balance seamless
+sampling with performance concerns,
+1 / (||𝙧₂ - 𝙧₁|| * length(textureSize(volume))) will do nicely, and
+for our cube texture, this works out to √3 samples per texel.[^3]
 
 [^1]: The exact justification for this is beyond the scope of this document.
 A full explanation may be written at a later date.
@@ -162,3 +152,6 @@ A full explanation may be written at a later date.
 we do not need to scale. If this algorithm is used in a situation
 where scaling is required, we leave that as an exercise for the
 developers.
+
+[^3]: √3 ≈ 1.732. Much smaller than this will result in tearing and
+other visual artifacts.
