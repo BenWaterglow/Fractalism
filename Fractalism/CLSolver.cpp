@@ -1,8 +1,5 @@
-#include <cstdio>
 #include <memory>
 #include <vector>
-#include <string.h>
-#include <exception>
 #include <GL/glew.h>
 #include "CLIncludeHelper.hpp"
 #include <CL/cl_gl.h>
@@ -12,14 +9,39 @@
 #include "Exceptions.hpp"
 #include "GLTexture3D.hpp"
 
+#define multicomplexFunctions
+
+static auto defineMulticomplexNumberSystem(const char* numberSystem, const char* elementSystem) {
+  return utils::format("X(%s, %s, "
+    "(sub_%s(mul_%s(x.x, y.x), mul_%s(x.y, y.y)), add_%s(mul_%s(x.x, y.y), mul_%s(x.y, y.x))), "
+    "(sub_%s(sqr_%s(x.x), sqr_%s(x.y)), scale_%s(mul_%s(x.x, x.y), 2.0)), "
+    "modulus_sq_%s(x.x) + modulus_sq_%s(x.y)"
+    ")",
+    numberSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem,
+    elementSystem);
+}
 
 CLSolver::CLSolver(GPUContext& ctx, wxStatusBar& statusBar) :
   ctx(ctx),
   program((statusBar.PushStatusText("Creating OpenCL solver program..."), ctx.buildProgram(
     "z = add(sqr(z), c)",
-    "X(multicomplex, complex, real) "
-    "X(multicomplex, bicomplex, complex) "
-    "X(multicomplex, tricomplex, bicomplex)",
+    utils::format("%s %s %s",
+      defineMulticomplexNumberSystem("complex", "real").get(),
+      defineMulticomplexNumberSystem("bicomplex", "complex").get(),
+      defineMulticomplexNumberSystem("tricomplex", "bicomplex").get()).get(),
     8,
     8.0))),
   kernels(program) {

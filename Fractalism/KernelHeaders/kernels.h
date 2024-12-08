@@ -203,7 +203,7 @@ static inline int4 number_system##_to_viewspace_point(viewspace view, work_item 
 create_phase_kernels(function, escape, number_system, number_system_type) \
 create_dynamical_kernels(function, escape, number_system, number_system_type)
 
-#define X(extension_method, number_system, element_system) \
+#define X(number_system, element_system, mul, sqr, modulus_sq) \
   create_viewspace_point_functions(number_system, number_system##_impl) \
   create_kernels( \
     KERNEL_FUNCTION( \
