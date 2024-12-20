@@ -80,19 +80,7 @@ namespace fractalism {
           inline real& operator=(const real& value) { return zoom = value; }
           inline ViewMapping& operator=(const ViewMapping& value) { return mapping = value; }
 
-          inline void asKernelArg(cl::Kernel& kernel, cl_uint index) const {
-            internal::viewspace internal = {
-              .center = center,
-              .zoom = zoom,
-              .mapping = mapping
-            };
-            try {
-              kernel.setArg(index, internal);
-            }
-            catch (const cl::Error& e) {
-              throw CLError(std::format("Could not set Viewspace as kernel parameter #{}", index), e);
-            }
-          }
+           void asKernelArg(cl::Kernel& kernel, cl_uint index) const;
 
           Number center;          ///< Center position of the viewspace.
           real zoom;              ///< Zoom factor for view rendering.

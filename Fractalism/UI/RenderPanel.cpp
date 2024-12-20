@@ -20,10 +20,12 @@ namespace fractalism {
       GLRenderCanvas* const canvas = new GLRenderCanvas(parent, space, *statusBar);
       static const int statusWidths[] = { 100, -1, 130 };
       statusBar->SetFieldsCount(3, statusWidths);
-      wxBoxSizer* canvasSizer = new wxBoxSizer(wxVERTICAL);
-      canvasSizer->Add(canvas, 1, wxSHAPED);
-      canvasSizer->Add(statusBar, 0, wxEXPAND);
-      parent.SetSizerAndFit(canvasSizer);
+      wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
+      wxBoxSizer* contentSizer = new wxBoxSizer(wxHORIZONTAL);
+      contentSizer->Add(canvas, 1, wxSHAPED);
+      panelSizer->Add(contentSizer, 1, wxEXPAND);
+      panelSizer->Add(statusBar, 0, wxEXPAND);
+      parent.SetSizerAndFit(panelSizer);
       return *canvas;
     }
 

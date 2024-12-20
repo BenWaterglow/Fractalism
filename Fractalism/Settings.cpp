@@ -24,27 +24,7 @@ namespace fractalism {
       0.0, 0.0, 0.0,
       zoom1x,
       1, 2, 3),
-    trackball(2.0, 1.0, 0.1),
-    phaseZMapping(3),
-    dynamicalZMapping(3) {
-    // Make sure we handle the z-mapping regardless of initial render dimensions
-    cltypes::ViewMapping& phaseViewMapping = phaseView.unwrap().mapping;
-    cltypes::ViewMapping& dynamicalViewMapping = dynamicalView.unwrap().mapping;
-    switch (renderDimensions) {
-    case options::Dimensions::two:
-      phaseZMapping = phaseViewMapping.z;
-      phaseViewMapping.z = 0;
-      dynamicalZMapping = dynamicalViewMapping.z;
-      dynamicalViewMapping.z = 0;
-      break;
-    case options::Dimensions::three:
-      phaseViewMapping.z = phaseZMapping;
-      dynamicalViewMapping.z = phaseZMapping;
-      break;
-    default:
-      return;
-    }
-  }
+    trackball(2.0, 1.0, 0.1) {}
 
   void Settings::parameterChanged() {
     App::get<CLSolver>().updateParameter();
@@ -63,26 +43,9 @@ namespace fractalism {
   }
 
   void Settings::renderDimensionsChanged() {
-    Settings settings = App::get<Settings>();
-    cltypes::Viewspace phaseView = settings.phaseView;
-    cltypes::Viewspace dynamicalView = settings.dynamicalView;
-    switch (settings.renderDimensions) {
-    case options::Dimensions::two:
-      settings.phaseZMapping = phaseView.mapping.z;
-      phaseView.mapping.z = 0;
-      settings.dynamicalZMapping = dynamicalView.mapping.z;
-      dynamicalView.mapping.z = 0;
-      break;
-    case options::Dimensions::three:
-      phaseView.mapping.z = settings.phaseZMapping;
-      dynamicalView.mapping.z = settings.phaseZMapping;
-      break;
-    default:
-      return;
-    }
-    settings.phaseView = phaseView;
-    settings.dynamicalView = dynamicalView;
     resolutionChanged(); // Gotta have 3D textures and buffer.
+    phaseViewChanged();
+    dynamicalViewChanged();
   }
 
   void Settings::spaceChanged() {

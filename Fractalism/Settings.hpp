@@ -12,6 +12,9 @@
 #include <Fractalism/Proxy.hpp>
 
 namespace fractalism {
+  namespace {
+    namespace cltypes = gpu::opencl::cltypes;
+  }
   struct Settings {
   private:
     template<typename V, auto callback>
@@ -27,8 +30,6 @@ namespace fractalism {
     static void phaseViewChanged();
     static void dynamicalViewChanged();
     static void trackballChanged();
-    cl_char phaseZMapping;
-    cl_char dynamicalZMapping;
   public:
     static constexpr double zoom1x = 1.5;
     static constexpr double minZoom = 0.1;
@@ -39,15 +40,24 @@ namespace fractalism {
     proxy::CallbackProxy<options::NumberSystem, &numberSystemChanged> numberSystem;
     proxy::CallbackProxy<options::Dimensions, &renderDimensionsChanged> renderDimensions;
     proxy::CallbackProxy<cl_uint, &resolutionChanged> resolution;
+    proxy::CallbackProxy<cltypes::Number, &parameterChanged> parameter;
+
+    struct RenderPanelSettings {
+      cltypes::Viewspace view;
+      glm::dvec3 eyePosition;
+      double iterationModifier;
+      cl_uint iterationsPerFrame;
+      options::RenderMode renderMode;
+      options::Space space;
+    };
 
     Value<options::RenderMode, &renderModeChanged> renderMode;
     Value<options::Space, &spaceChanged> space;
     Value<cl_uint, &iterationsPerFrameChanged> iterationsPerFrame;
     Value<double, &iterationModifierChanged> iterationModifier;
     Value<glm::dvec3, &trackballChanged> trackball;
-    Value<gpu::opencl::cltypes::Number, &parameterChanged> parameter;
-    Value<gpu::opencl::cltypes::Viewspace, &phaseViewChanged> phaseView;
-    Value<gpu::opencl::cltypes::Viewspace, &dynamicalViewChanged> dynamicalView;
+    Value<cltypes::Viewspace, &phaseViewChanged> phaseView;
+    Value<cltypes::Viewspace, &dynamicalViewChanged> dynamicalView;
 
     Settings();
 
@@ -135,7 +145,7 @@ namespace fractalism {
     }
 
     template<options::Space space>
-    inline proxy::Proxy<gpu::opencl::cltypes::Viewspace> auto& getViewspace() {
+    inline proxy::Proxy<cltypes::Viewspace> auto& getViewspace() {
       if constexpr (space == options::Space::phase) {
         return phaseView;
       } else if constexpr (space == options::Space::dynamical) {

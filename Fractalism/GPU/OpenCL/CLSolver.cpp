@@ -44,19 +44,19 @@ namespace fractalism {
         static void setKernelParameters(cl::Kernel & kernel, cl_uint idx, T & arg);
 
       CLSolver::CLSolver(GPUContext & ctx) :
-        // comma operator to set status text before constructor builds the CL program
-        ctx((App::get<wxStatusBar>().PushStatusText("Creating OpenCL solver program..."), ctx)),
-        program(ctx.buildProgram(
-          "z = add(sqr(z), c)",
-          cayleyDicksonConstruction("complex", "real") +
-          cayleyDicksonConstruction("quaternion", "complex") +
-          cayleyDicksonConstruction("octonian", "quaternion") +
-          defineMulticomplexNumberSystem("bicomplex", "complex") +
-          defineMulticomplexNumberSystem("tricomplex", "bicomplex"),
-          8.0)),
-        memory(App::get<Settings>().getRenderVolumeSize(), ctx),
-        currentPhaseIteration(0),
-        currentDynamicalIteration(0) {
+          // comma operator to set status text before constructor builds the CL program
+          ctx((App::get<wxStatusBar>().PushStatusText("Creating OpenCL solver program..."), ctx)),
+          program(ctx.buildProgram(
+            "z = add(sqr(z), c)",
+            cayleyDicksonConstruction("complex", "real") +
+            cayleyDicksonConstruction("quaternion", "complex") +
+            cayleyDicksonConstruction("octonian", "quaternion") +
+            defineMulticomplexNumberSystem("bicomplex", "complex") +
+            defineMulticomplexNumberSystem("tricomplex", "bicomplex"),
+            8.0)),
+          memory(App::get<Settings>().getRenderVolumeSize(), ctx),
+          currentPhaseIteration(0),
+          currentDynamicalIteration(0) {
         updateKernels();
         App::get<wxStatusBar>().PopStatusText();
       }

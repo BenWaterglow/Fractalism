@@ -20,11 +20,6 @@ namespace fractalism {
     public:
       GLRenderCanvas(wxWindow& parent, options::Space space, wxStatusBar& statusBar);
     private:
-      void bindMouseHandler(
-        const wxEventTypeTag<wxMouseEvent>& eventType,
-        proxy::Proxy<cltypes::Viewspace> auto& viewspace);
-      void handleMouseEvents(double x, double y, wxMouseEvent& evt, proxy::Proxy<cltypes::Viewspace> auto& viewspace);
-      wxStatusBar& statusBar;
       glm::dvec2 lastPoint;
       const wxEventTypeTag<StateChangeEvent>& viewChangeEvent;
     };

@@ -7,7 +7,6 @@ namespace fractalism {
 
     void fractalism::ui::ViewMappingSelector::updateRenderDimensions() {
       z.ShowItems(App::get<Settings>().renderDimensions == options::Dimensions::three);
-      z.updateOptions();
       Layout();
     }
 

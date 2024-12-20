@@ -5,9 +5,6 @@
 #include <Fractalism/UI/WxIncludeHelper.hpp>
 #include <wx/glcanvas.h>
 
-#include <Fractalism/GPU/OpenGL/GLShaderProgram.hpp>
-#include <Fractalism/Options.hpp>
-
 namespace fractalism {
   namespace gpu {
     namespace opengl {
