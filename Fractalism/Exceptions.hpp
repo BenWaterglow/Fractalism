@@ -1,69 +1,66 @@
-#ifndef _EXCEPTIONS_HPP_
-#define _EXCEPTIONS_HPP_
+#ifndef _FRACTALISM_EXCEPTIONS_HPP_
+#define _FRACTALISM_EXCEPTIONS_HPP_
 
 #include <string>
-#include <exception>
-
+#include <stdexcept>
 #include <GL/glew.h>
 
-#include "Utils.hpp"
-#include "CLIncludeHelper.hpp"
+#include <Fractalism/GPU/OpenCL/CLIncludeHelper.hpp>
 
-class FractalismError : public std::exception {
-public:
-  FractalismError(const char * const &what);
-  template <typename... T>
-  FractalismError(const char * const &format, T...args) : FractalismError(utils::format(format, args...).get()) {}
-};
+namespace fractalism {
+  class FractalismError : public std::runtime_error {
+  public:
+    FractalismError(const std::string& what);
+  };
 
-class GLError : public FractalismError {
-public:
-  GLError(const char * const &what);
-  template <typename... T>
-  GLError(const char * const &format, T...args) : FractalismError(format, args...) {}
-};
+  class AssertionError : public FractalismError {
+  public:
+    AssertionError(const std::string& what);
+  };
 
-class GLBuildError : public GLError {
-public:
-  GLBuildError(const char * const &what);
-  template <typename... T>
-  GLBuildError(const char * const &format, T...args) : GLError(format, args...) {}
-};
+  class GLError : public FractalismError {
+  public:
+    GLError(const std::string& what);
+    GLError(const std::string& message, GLenum errorCode);
+    GLError(GLenum errorCode);
+  };
 
-class GLCompileError : public GLBuildError {
-public:
-  GLCompileError(const char * const &what);
-  template <typename... T>
-  GLCompileError(const char * const &format, T...args) : GLBuildError(format, args...) {}
-};
+  class GLBuildError : public GLError {
+  public:
+    GLBuildError(const std::string& what);
+  };
 
-class GLLinkError : public GLBuildError {
-public:
-  GLLinkError(const char * const &what);
-  template <typename... T>
-  GLLinkError(const char * const &format, T...args) : GLBuildError(format, args...) {}
-};
+  class GLCompileError : public GLBuildError {
+  public:
+    GLCompileError(GLenum type, GLuint shaderId);
+  };
 
-class CLError : public FractalismError {
-public:
-  CLError(const char * const &what);
-  CLError(const char * const &message, const cl::Error& e);
-  template <typename... T>
-  CLError(const char * const &format, T...args) : FractalismError(format, args...) {}
-};
+  class GLLinkError : public GLBuildError {
+  public:
+    GLLinkError(GLuint programId);
+  };
 
-class CLBuildError : public CLError {
-public:
-  CLBuildError(const char * const &what);
-  template <typename... T>
-  CLBuildError(const char * const &format, T...args) : CLError(format, args...) {}
-};
+  class CLError : public FractalismError {
+  public:
+    CLError(const std::string& what);
+    CLError(const std::string& what, const cl::Error& e);
+  };
 
-class CLSVMAllocationError : public CLError {
-public:
-  CLSVMAllocationError(const char * const &what);
-  template <typename... T>
-  CLSVMAllocationError(const char * const &format, T...args) : CLError(format, args...) {}
-};
+  class CLBuildError : public CLError {
+  public:
+    CLBuildError(const std::string& what);
+  };
+
+  class CLKernelArgError : public CLError {
+  public:
+    CLKernelArgError(const std::string& what);
+    CLKernelArgError(const std::string& message, cl::Kernel& kernel, cl_uint index, const cl::Error& e);
+  };
+
+  class CLSVMAllocationError : public CLError {
+  public:
+    CLSVMAllocationError(const std::string& what);
+  };
+}
 
 #endif

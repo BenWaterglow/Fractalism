@@ -13,51 +13,33 @@ else (WIN32)
     set(ADDITIONAL_EXECUTABLE_ARGS "")
 endif (WIN32)
 
-add_executable (${PROJECT_NAME} ${ADDITIONAL_EXECUTABLE_ARGS}
-    CLIncludeHelper.hpp
-	CLSolver.cpp
-    CLSolver.hpp
-    CLTypes.hpp
-    CLUtils.cpp
-    CLUtils.hpp
+add_executable (${PROJECT_NAME} ${ADDITIONAL_EXECUTABLE_ARGS})
+
+target_sources(${PROJECT_NAME} PRIVATE
+    KernelHeaders/cltypes.h
+    KernelHeaders/interop.h
+    KernelHeaders/kernels.h
+    KernelHeaders/number_systems.h
+    KernelHeaders/spectral_color.h
+    App.cpp
+    App.hpp
     Events.cpp
     Events.hpp
     Exceptions.cpp
     Exceptions.hpp
-    FractalismApp.cpp
-    FractalismApp.hpp
-    GLRenderCanvas.cpp
-    GLRenderCanvas.hpp
-    GLRenderer.cpp
-    GLRenderer.hpp
-    GLShader.cpp
-    GLShader.hpp
-    GLShaderProgram.cpp
-    GLShaderProgram.hpp
-    GLTexture3D.cpp
-    GLTexture3D.hpp
-    GLUtils.cpp
-    GLUtils.hpp
-    GPUContext.cpp
-    GPUContext.hpp
-    MainUIFrame.cpp
-    MainUIFrame.hpp
-    NumberInput.cpp
-    NumberInput.hpp
     Options.hpp
-    RenderPanel.cpp
-    RenderPanel.hpp
+    Proxy.hpp
+    Settings.cpp
     Settings.hpp
-    SharedState.cpp
-    SharedState.hpp
     Utils.cpp
-    Utils.hpp
-    ViewMappingSelector.cpp
-    ViewMappingSelector.hpp
-    WxIncludeHelper.hpp)
+    Utils.hpp)
+
+add_subdirectory("GPU")
+add_subdirectory("UI")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE wx::wxcore wx::wxbase wx::wxgl GLEW::glew OpenCL::OpenCL)
-target_include_directories(${PROJECT_NAME} PRIVATE glm::glm-header-only)
+target_include_directories(${PROJECT_NAME} PRIVATE glm::glm-header-only ${PROJECT_SOURCE_DIR})
+target_compile_definitions(${PROJECT_NAME} PRIVATE USE_DOUBLE_MATH MAX_NUMBER_SYSTEM_SIZE=8)
 
 add_custom_target(copy_shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
@@ -74,7 +56,7 @@ add_custom_target(copy_kernels
 add_dependencies(${PROJECT_NAME} copy_shaders copy_kernels)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+  set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 endif()
 
 # TODO: Add tests and install targets if needed.

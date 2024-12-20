@@ -1,9 +1,5 @@
-#ifndef _SPECTRAL_COLOR_H_
-#define _SPECTRAL_COLOR_H_
-
-#if defined(__cplusplus) || defined(__OPENCL_CPP_VERSION__)
-extern "C" {
-#endif
+#ifndef _FRACTALISM_SPECTRAL_COLOR_H_
+#define _FRACTALISM_SPECTRAL_COLOR_H_
 
 typedef struct range {
   float low;
@@ -83,9 +79,5 @@ static float4 spectral_color(float value) {
     (b[0] * value_sqr) + (b[1] * value) + b[2],
     value_sqr);
 }
-
-#if defined(__cplusplus) || defined(__OPENCL_CPP_VERSION__)
-}
-#endif
 
 #endif // !_SPECTRAL_COLOR_H_

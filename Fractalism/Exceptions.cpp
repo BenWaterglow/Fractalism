@@ -1,20 +1,56 @@
-#include "Exceptions.hpp"
-#include "CLUtils.hpp"
+#include <format>
+#include <Fractalism/Exceptions.hpp>
+#include <Fractalism/GPU/OpenGL/GLUtils.hpp>
+#include <Fractalism/GPU/OpenCL/CLUtils.hpp>
 
-FractalismError::FractalismError(const char * const &what) : std::exception(what) {}
+namespace fractalism {
 
-GLError::GLError(const char * const &what) : FractalismError(what) {}
+  FractalismError::FractalismError(const std::string& what) : std::runtime_error(what) {}
 
-GLBuildError::GLBuildError(const char * const &what) : GLError(what) {}
+  AssertionError::AssertionError(const std::string& what) : FractalismError(what) {}
 
-GLCompileError::GLCompileError(const char * const &what) : GLBuildError(what) {}
+  GLError::GLError(const std::string& what) : FractalismError(what) {}
 
-GLLinkError::GLLinkError(const char * const &what) : GLBuildError(what) {}
+  GLError::GLError(const std::string& message, GLenum errorCode) :
+    GLError(std::format("{}. OpenGL encounterd error {} ({})",
+      message,
+      reinterpret_cast<const char*>(glewGetErrorString(errorCode)),
+      errorCode)) {}
 
-CLError::CLError(const char * const &what) : FractalismError(what) {}
+  GLError::GLError(GLenum errorCode) :
+    GLError("Unexpected error", errorCode) {}
 
-CLError::CLError(const char * const &message, const cl::Error& e) : CLError("%s. %s encountered error %s (%d)", message, e.what(), clutils::getCLErrorString(e.err()), e.err()) {}
+  GLBuildError::GLBuildError(const std::string& what) : GLError(what) {}
 
-CLBuildError::CLBuildError(const char * const &what) : CLError(what) {}
+  GLCompileError::GLCompileError(GLenum type, GLuint shaderId) :
+    GLBuildError(std::format("Could not compile OpenGL {} shader. Compiler log:\n{}",
+      gpu::opengl::glutils::getShaderType(type),
+      gpu::opengl::glutils::getGlCompilerLog(shaderId))) {}
 
-CLSVMAllocationError::CLSVMAllocationError(const char * const &what) : CLError(what) {}
+  GLLinkError::GLLinkError(GLuint programId) :
+    GLBuildError(std::format("Could not link OpenGL program. Linker log:\n{}",
+      gpu::opengl::glutils::getLinkerLog(programId))) {}
+
+  CLError::CLError(const std::string& what) : FractalismError(what) {}
+
+  CLError::CLError(const std::string& message, const cl::Error& e) :
+    CLError(std::format("{}. OpenCL function {} encountered error {} ({})",
+      message,
+      e.what(), // cl::Error.what() just returns the function name.
+      gpu::opencl::clutils::getCLErrorString(e.err()),
+      e.err())) {}
+
+  CLBuildError::CLBuildError(const std::string& what) : CLError(what) {}
+
+  CLSVMAllocationError::CLSVMAllocationError(const std::string& what) : CLError(what) {}
+
+  CLKernelArgError::CLKernelArgError(const std::string& what) : CLError(what) {}
+
+  CLKernelArgError::CLKernelArgError(const std::string& message, cl::Kernel& kernel, cl_uint index, const cl::Error& e) :
+    CLError(std::format("Could not set {} for kernel '{}' argument #{} ({} {})",
+      message,
+      kernel.getInfo<CL_KERNEL_FUNCTION_NAME>(),
+      index,
+      kernel.getArgInfo<CL_KERNEL_ARG_TYPE_NAME>(index),
+      kernel.getArgInfo<CL_KERNEL_ARG_NAME>(index)), e) {}
+}

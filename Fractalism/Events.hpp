@@ -1,18 +1,23 @@
-#ifndef _EVENTS_HPP_
-#define _EVENTS_HPP_
+#ifndef _FRACTALISM_EVENTS_HPP_
+#define _FRACTALISM_EVENTS_HPP_
 
-#include "WxIncludeHelper.hpp"
+#include <Fractalism/UI/WxIncludeHelper.hpp>
 
+#include <Fractalism/Options.hpp>
 
-class StateChangeEvent : public wxEvent {
-public:
-  StateChangeEvent(wxEventType eventType, int winId);
-  virtual wxEvent *Clone() const;
-  static void fireEvent(wxEventType eventType, wxWindow *window);
-};
+namespace fractalism {
+  class StateChangeEvent : public wxEvent {
+  public:
+    StateChangeEvent(wxEventType eventType, int winId);
+    virtual wxEvent* Clone() const;
+    static void fireEvent(wxEventType eventType, wxWindow* window);
 
-wxDECLARE_EVENT(EVT_ParameterChanged, StateChangeEvent);
-wxDECLARE_EVENT(EVT_PhaseViewChanged, StateChangeEvent);
-wxDECLARE_EVENT(EVT_DynamicalViewChanged, StateChangeEvent);
+    template<options::Space space>
+    static const wxEventTypeTag<StateChangeEvent>& viewChanged;
+  };
 
+  wxDECLARE_EVENT(EVT_ParameterChanged, StateChangeEvent);
+  wxDECLARE_EVENT(EVT_PhaseViewChanged, StateChangeEvent);
+  wxDECLARE_EVENT(EVT_DynamicalViewChanged, StateChangeEvent);
+}
 #endif

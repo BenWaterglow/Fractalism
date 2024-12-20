@@ -1,9 +1,5 @@
-#ifndef _KERNEL_BASE_H_
-#define _KERNEL_BASE_H_
-
-#if !defined(KERNEL_FUNCTION)
-#error "Preprocessor macro KERNEL_FUNCTION(add, sub, mul, sqr, scale, modulus_sq) is not defined."
-#endif
+#ifndef _FRACTALISM_FRACTALISM_KERNEL_BASE_H_
+#define _FRACTALISM_FRACTALISM_KERNEL_BASE_H_
 
 #if !defined(ESCAPE_VALUE)
 #error "Preprocessor macro ESCAPE_VALUE is not defined."
@@ -13,9 +9,7 @@
 #include "number_systems.h"
 #include "cltypes.h"
 
-#if defined(__cplusplus) || defined(__OPENCL_CPP_VERSION__)
-extern "C" {
-#endif
+_EXTERN_C_DECL_
 
 // The value of log(0.5) - log(log(2.0))
 __constant float log_half_minus_log_log_2 = -0.32663425997828094f;
@@ -31,9 +25,11 @@ static inline float4 fractional_escape_color(real modulus_squared, int max_itera
 #endif
 
 __constant size_t max_work_store_buffer_size = CL_DEVICE_MAX_MEM_ALLOC_SIZE / sizeof(work_store);
-typedef struct __attribute__((packed)) work_store_buffer {
+_PACK_BEGIN_ struct work_store_buffer {
   __global work_store* p;
-} work_store_buffer;
+} _PACK_END_;
+
+typedef struct work_store_buffer work_store_buffer;
 
 typedef struct work_dimensions {
   int width;
@@ -75,7 +71,7 @@ static inline work_item get_work_item(__write_only image3d_t output) {
 static inline work_store_item get_work_store_item(__write_only image3d_t output, __global work_store_buffer* buffer) {
   work_item item = get_work_item(output);
 
-  int index = (item.location.z * item.dimensions.height * item.dimensions.width) + (item.location.y * item.dimensions.width) + item.location.x;
+  size_t index = (item.location.z * item.dimensions.height * item.dimensions.width) + (item.location.y * item.dimensions.width) + item.location.x;
 
   return (work_store_item) {
     item,
@@ -88,11 +84,13 @@ static inline float4 location_to_color(work_item item) {
     ((float)item.location.x) / ((float)item.dimensions.width),
     ((float)item.location.y) / ((float)item.dimensions.height),
     ((float)item.location.z) / ((float)item.dimensions.depth),
-    0.0f);
+    8.0/sqrt((real)(item.dimensions.width*item.dimensions.width +
+             item.dimensions.height*item.dimensions.height +
+             item.dimensions.depth*item.dimensions.depth)));
 }
 
 #define create_kernel(name, c_value, z0_value, condition, function, finish, number_system, number_system_type) \
-kernel void name##_##number_system( \
+__kernel void name##_##number_system( \
     __write_only image3d_t output, \
     __global work_store_buffer *buffer, \
     viewspace view, \
@@ -108,15 +106,15 @@ kernel void name##_##number_system( \
     i = 0; \
   } else { \
     work_store z_last = *store_item.p; \
-    z = number_system_type##_from_raw(z_last.value.raw, 0); \
+    z = number_system##_from_raw(z_last.value.raw, 0); \
     i = z_last.i; \
   } \
   for (;(i < max_iterations) && (condition); i++) { \
     function; \
   } \
   number result = (number){{0.0}}; \
-  number_system_type##_to_raw(z, result.raw, 0);\
-  *store_item.p = (work_store){result, i}; \
+  number_system##_to_raw(z, result.raw, 0);\
+  *store_item.p = (work_store){.i = i, .value = result}; \
   finish; \
 }
 
@@ -127,7 +125,7 @@ write_imagef( \
     fractional_escape_color(modulus_sq_##number_system(z), max_iterations, i))
 
 #define write_translated_point(number_system) \
-int4 translated = number_system##_to_viewspace_point(view, store_item.item, z); \
+int4 translated = reverse_view_mapping_##number_system(view, store_item.item, z); \
 if (translated.x >= 0 && translated.x < store_item.item.dimensions.width && \
     translated.y >= 0 && translated.y < store_item.item.dimensions.height && \
     translated.z >= 0 && translated.z < store_item.item.dimensions.depth) { \
@@ -156,7 +154,7 @@ create_kernel( \
 #define create_phase_kernels(function, escape, number_system, number_system_type) \
 create_escape_and_translated_kernels( \
     phase, \
-    viewspace_point_to_##number_system(view, store_item.item), \
+    apply_view_mapping_##number_system(view, store_item.item), \
     zero_##number_system(), \
     function, \
     escape, \
@@ -166,33 +164,33 @@ create_escape_and_translated_kernels( \
 #define create_dynamical_kernels(function, escape, number_system, number_system_type) \
 create_escape_and_translated_kernels( \
     dynamical, \
-    number_system_type##_from_raw(param.raw, 0), \
-    viewspace_point_to_##number_system(view, store_item.item), \
+    number_system##_from_raw(param.raw, 0), \
+    apply_view_mapping_##number_system(view, store_item.item), \
     function, \
     escape, \
     number_system, \
     number_system_type)
 
-static inline void apply_view_mapping_element(real* raw, real zoom, char view_mapping, int value, int range) {
-  raw[abs(view_mapping)] = ((((real)value) / ((real)range)) * 2.0 - 1.0) * copysign(zoom, (real)(view_mapping));
+static inline void apply_view_mapping_element(real* raw, real zoom, char view_mapping, int location, int range) {
+  raw[abs(view_mapping)] = ((((real)location) / ((real)range)) * 2.0 - 1.0) * copysign(zoom, (real)(view_mapping));
 }
 
 static inline int reverse_view_mapping_element(real* raw, real zoom, char view_mapping, int range) {
-  return convert_int_rte((((raw[abs(view_mapping)] / copysign(zoom, (real)view_mapping)) + 1.0) / 2.0) * range);
+  return convert_int_rte((((real)range)) * ((raw[abs(view_mapping)] / (2.0 * copysign(zoom, (real)view_mapping))) + 0.5));
 }
 
-#define create_viewspace_point_functions(number_system, number_system_type) \
-static inline number_system_type viewspace_point_to_##number_system(viewspace view, work_item item) { \
-  real raw[sizeof(((number){}).raw) + 1] = {0.0}; \
+#define create_view_mapping_functions(number_system, number_system_type) \
+static inline number_system_type apply_view_mapping_##number_system(viewspace view, work_item item) { \
+  real raw[MAX_NUMBER_SYSTEM_SIZE + 1] = {0.0}; \
   apply_view_mapping_element(raw, view.zoom, view.mapping.x, item.location.x, item.dimensions.width); \
   apply_view_mapping_element(raw, view.zoom, view.mapping.y, item.location.y, item.dimensions.height); \
   apply_view_mapping_element(raw, view.zoom, view.mapping.z, item.location.z, item.dimensions.depth); \
-  return add_##number_system(number_system_type##_from_raw(raw, 1), number_system_type##_from_raw(view.center.raw, 0)); \
+  return add_##number_system(number_system##_from_raw(raw, 1), number_system##_from_raw(view.center.raw, 0)); \
 } \
-static inline int4 number_system##_to_viewspace_point(viewspace view, work_item item, number_system_type point) { \
-  real raw[sizeof(((number){}).raw) + 1] = {0.0}; \
-  number_system_type##_to_raw(sub_##number_system(point, number_system_type##_from_raw(view.center.raw, 0)), raw, 1); \
-  (int4)( \
+static inline int4 reverse_view_mapping_##number_system(viewspace view, work_item item, number_system_type point) { \
+  real raw[MAX_NUMBER_SYSTEM_SIZE + 1] = {0.0}; \
+  number_system##_to_raw(sub_##number_system(point, number_system##_from_raw(view.center.raw, 0)), raw, 1); \
+  return (int4)( \
     reverse_view_mapping_element(raw, view.zoom, view.mapping.x, item.dimensions.width), \
     reverse_view_mapping_element(raw, view.zoom, view.mapping.y, item.dimensions.height), \
     reverse_view_mapping_element(raw, view.zoom, view.mapping.z, item.dimensions.depth), \
@@ -203,12 +201,13 @@ static inline int4 number_system##_to_viewspace_point(viewspace view, work_item 
 create_phase_kernels(function, escape, number_system, number_system_type) \
 create_dynamical_kernels(function, escape, number_system, number_system_type)
 
-#define X(number_system, element_system, mul, sqr, modulus_sq) \
-  create_viewspace_point_functions(number_system, number_system##_impl) \
+#define X(number_system, element_system, conj, mul, sqr, modulus_sq) \
+  create_view_mapping_functions(number_system, number_system##_impl) \
   create_kernels( \
     KERNEL_FUNCTION( \
       add_##number_system, \
       sub_##number_system, \
+      conj_##number_system, \
       mul_##number_system, \
       sqr_##number_system, \
       scale_##number_system, \
@@ -216,11 +215,11 @@ create_dynamical_kernels(function, escape, number_system, number_system_type)
     ESCAPE_VALUE, \
     number_system, \
     number_system##_impl)
-NUMBER_SYSTEMS
+NUMBER_SYSTEMS;
 #undef X
 
 #undef create_kernels
-#undef create_viewspace_point_functions
+#undef create_view_mapping_functions
 #undef create_dynamical_kernels
 #undef create_phase_kernels
 #undef create_escape_and_translated_kernels
@@ -228,8 +227,6 @@ NUMBER_SYSTEMS
 #undef write_fractional_escape
 #undef create_kernel
 
-#if defined(__cplusplus) || defined(__OPENCL_CPP_VERSION__)
-}
-#endif
+_EXTERN_C_END_
 
 #endif // !_KERNEL_BASE_H_
