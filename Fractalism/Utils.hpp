@@ -1,13 +1,14 @@
-#ifndef _FRACTALISM_UTILS_HPP_
+﻿#ifndef _FRACTALISM_UTILS_HPP_
 #define _FRACTALISM_UTILS_HPP_
 
-#include <memory>
-#include <cstring>
+#include <cmath>
+#include <concepts>
+#include <string>
 #include <type_traits>
 
 namespace fractalism {
   namespace utils {
-    std::unique_ptr<char[]> readFile(const char* filename);
+    std::string readFile(const char* filename);
     void writeToFile(const char* filename, size_t length, const char* data);
 
     template<typename E>
@@ -20,6 +21,18 @@ namespace fractalism {
     template <Enum E>
     static inline constexpr E fromUnderlyingType(std::underlying_type_t<E> value) {
       return static_cast<E>(value);
+    }
+
+    static inline constexpr std::wstring toSubscript(std::integral auto value) {
+      // Silly, but we gotta handle 0 too. Might as well make a fast-path for single digits.
+      size_t digitCount = value < 1 ? 1 : static_cast<size_t>(std::truncf(std::log10f(value))) + 1;
+      std::wstring result;
+      result.resize(digitCount);
+      for (size_t i = 0; i < digitCount; i++) {
+        result[i] = L'₀' + (value % 10);
+        value /= 10;
+      }
+      return result;
     }
 
     template<Enum auto value>

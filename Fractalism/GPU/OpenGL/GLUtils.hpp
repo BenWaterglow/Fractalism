@@ -22,9 +22,9 @@ namespace fractalism {
           glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength);
 
           std::string infoLog;
-          infoLog.reserve(infoLogLength);
+          infoLog.resize(infoLogLength);
 
-          glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &infoLog[0]);
+          glGetShaderInfoLog(shaderId, infoLogLength, nullptr, infoLog.data());
           return infoLog;
         }
 
@@ -41,9 +41,9 @@ namespace fractalism {
           glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLogLength);
 
           std::string infoLog;
-          infoLog.reserve(infoLogLength);
+          infoLog.resize(infoLogLength);
 
-          glGetProgramInfoLog(programId, infoLogLength, nullptr, &infoLog[0]);
+          glGetProgramInfoLog(programId, infoLogLength, nullptr, infoLog.data());
           return infoLog;
         }
       }

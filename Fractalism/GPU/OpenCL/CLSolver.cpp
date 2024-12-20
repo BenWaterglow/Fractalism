@@ -12,7 +12,7 @@
 namespace fractalism {
   namespace gpu {
     namespace opencl {
-      static std::string defineMulticomplexNumberSystem(const char* numberSystem, const char* elementSystem) {
+      static std::string defineMulticomplexNumberSystem(std::string&& numberSystem, std::string&& elementSystem) {
         return std::format("X("
           /* number_system  */ "{0},"
           /* element_system */ "{1},"
@@ -24,7 +24,7 @@ namespace fractalism {
           elementSystem);
       }
 
-      static std::string cayleyDicksonConstruction(const char* numberSystem, const char* elementSystem) {
+      static std::string cayleyDicksonConstruction(std::string&& numberSystem, std::string&& elementSystem) {
         return std::format("X("
           /* number_system  */ "{0},"
           /* element_system */ "{1},"

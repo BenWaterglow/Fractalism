@@ -29,11 +29,9 @@ namespace fractalism {
           using Return = SVMCallbackResult<Callable, Type, Args...>;
           try {
             queue.enqueueMapSVM(ptr, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, count * sizeof(Type));
-          }
-          catch (const cl::Error& e) {
+          } catch (const cl::Error& e) {
             throw CLError("Could not map OpenCL Shared Virtual Memory buffer", e);
           }
-
 
           try {
             // Handle void return differently.
@@ -46,8 +44,7 @@ namespace fractalism {
               queue.enqueueUnmapSVM(ptr);
               return result;
             }
-          }
-          catch (const cl::Error& e) {
+          } catch (const cl::Error& e) {
             throw CLError("Could not unmap OpenCL Shared Virtual Memory buffer", e);
           }
         }

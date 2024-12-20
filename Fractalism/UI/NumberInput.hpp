@@ -7,6 +7,7 @@
 #include <wx/valnum.h>
 
 #include <Fractalism/GPU/OpenCL/CLTypes.hpp>
+#include <Fractalism/Utils.hpp>
 #include <Fractalism/Events.hpp>
 #include <Fractalism/Proxy.hpp>
 
@@ -72,7 +73,7 @@ namespace fractalism {
         wxStaticText(
           &parent,
           wxID_ANY,
-          std::format(L"e{} (drag to change)", static_cast<wchar_t>(L'₀' + i))) {
+          std::format(L"e{} (drag to change)", utils::toSubscript(i))) {
         static wxCoord lastX;
         Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& evt) {
           CaptureMouse();

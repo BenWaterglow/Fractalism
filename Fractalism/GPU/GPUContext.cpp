@@ -95,13 +95,13 @@ namespace fractalism {
           "#pragma OPENCL EXTENSION cl_khr_fp64 : enable"
           #endif
           R"SRC(
-        #define MAX_NUMBER_SYSTEM_SIZE {}
-        #define CL_DEVICE_MAX_MEM_ALLOC_SIZE {}
-        #define ESCAPE_VALUE {}
-        #define NUMBER_SYSTEMS {}
-        #define KERNEL_FUNCTION(add, sub, conj, mul, sqr, scale, modulus_sq) {}
+          #define MAX_NUMBER_SYSTEM_SIZE {}
+          #define CL_DEVICE_MAX_MEM_ALLOC_SIZE {}
+          #define ESCAPE_VALUE {}
+          #define NUMBER_SYSTEMS {}
+          #define KERNEL_FUNCTION(add, sub, conj, mul, sqr, scale, modulus_sq) {}
 
-        #include "kernels.h")SRC",
+          #include "kernels.h")SRC",
           MAX_NUMBER_SYSTEM_SIZE,
           maxMemAllocSize,
           escapeValue,

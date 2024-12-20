@@ -39,6 +39,7 @@ namespace fractalism {
     proxy::CallbackProxy<options::NumberSystem, &numberSystemChanged> numberSystem;
     proxy::CallbackProxy<options::Dimensions, &renderDimensionsChanged> renderDimensions;
     proxy::CallbackProxy<cl_uint, &resolutionChanged> resolution;
+
     Value<options::RenderMode, &renderModeChanged> renderMode;
     Value<options::Space, &spaceChanged> space;
     Value<cl_uint, &iterationsPerFrameChanged> iterationsPerFrame;

@@ -1,4 +1,7 @@
 #include <Fractalism/GPU/OpenGL/GLShader.hpp>
+
+#include <string>
+
 #include <Fractalism/Utils.hpp>
 #include <Fractalism/Exceptions.hpp>
 
@@ -6,9 +9,9 @@ namespace fractalism {
   namespace gpu {
     namespace opengl {
       GLShader::GLShader(GLenum type, const char* filename) : id(glCreateShader(type)) {
-        std::unique_ptr<char[]> fileSource = utils::readFile(filename);
-        const char* sourceString = fileSource.get();
-        glShaderSource(id, 1, &sourceString, nullptr);
+        std::string contents = utils::readFile(filename);
+        const char* fileSource = contents.c_str();
+        glShaderSource(id, 1, &fileSource, nullptr);
 
         glCompileShader(id);
         GLint compileStatus;
