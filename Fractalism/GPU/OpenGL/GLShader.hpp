@@ -3,18 +3,13 @@
 
 #include <GL/glew.h>
 
-namespace fractalism {
-  namespace gpu {
-    namespace opengl {
-
-      class GLShader {
-      public:
-        GLShader(GLenum type, const char* filename);
-        ~GLShader();
-        operator GLuint() const;
-        GLuint id;
-      };
-    }
-  }
+namespace fractalism::gpu::opengl {
+  class GLShader {
+  public:
+    GLShader(GLenum type, const char* filename);
+    ~GLShader();
+    operator GLuint() const;
+    GLuint id;
+  };
 }
 #endif

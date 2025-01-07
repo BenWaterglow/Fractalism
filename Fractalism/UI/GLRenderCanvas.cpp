@@ -1,106 +1,111 @@
 #include <format>
 #include <cmath>
+#include <numbers>
 #include <algorithm>
-#include <wx/time.h>
+#include <glm/glm.hpp>
 
 #include <Fractalism/UI/GLRenderCanvas.hpp>
 #include <Fractalism/Options.hpp>
 #include <Fractalism/Events.hpp>
-#include <Fractalism/Proxy.hpp>
 #include <Fractalism/App.hpp>
 
-namespace fractalism {
-  namespace ui {
-    namespace {
-      namespace cltypes = gpu::opencl::cltypes;
+namespace fractalism::ui {
+  namespace {
+    namespace types = gpu::types;
+    static inline types::Coordinates pointCoordinates(wxPoint point, wxSize size) {
+      return {
+        (static_cast<real>(point.x) / static_cast<real>(size.GetWidth()) * 2.0) - 1.0,
+        1.0 - (static_cast<real>(point.y) / static_cast<real>(size.GetHeight()) * 2.0) // point.y is inverted, ie, positive is down.
+      };
     }
-    const double NaN = nan("");
+  }
 
-    GLRenderCanvas::GLRenderCanvas(wxWindow& parent, options::Space space, wxStatusBar& statusBar) :
-        wxGLCanvas(&parent, wxID_ANY, nullptr, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE, "GLRenderCanvas"),
-        lastPoint(NaN),
-        viewChangeEvent(space == options::Space::phase ? EVT_PhaseViewChanged : EVT_DynamicalViewChanged) {
-      proxy::Proxy<cltypes::Viewspace> auto& viewspace = App::get<Settings>().getViewspace<options::Space::phase>();
-      Bind(wxEVT_MOUSE_CAPTURE_LOST, [](wxMouseCaptureLostEvent&) {});
-      Bind(wxEVT_ENTER_WINDOW, [&lastPoint = this->lastPoint](wxMouseEvent&) {
-        lastPoint = glm::dvec2(NaN);
-      });
-      Bind(wxEVT_LEAVE_WINDOW, [&lastPoint = this->lastPoint, &statusBar](wxMouseEvent&) {
-        lastPoint = glm::dvec2(NaN);
-        statusBar.SetStatusText("", 1);
-      });
-      Bind(wxEVT_MOUSEWHEEL, [&viewspace, &statusBar](wxMouseEvent& evt) {
-        cltypes::Viewspace view = viewspace;
-        double delta = (static_cast<double>(evt.GetWheelRotation()) / static_cast<double>(evt.GetWheelDelta() * 2));
-        double oldZoom = Settings::zoom1x / view.zoom;
-        view.zoom = Settings::zoom1x / std::clamp(
+  GLRenderCanvas::GLRenderCanvas(wxWindow& parent, ViewWindowSettings& settings, wxStatusBar& statusBar) :
+        wxGLCanvas(
+          &parent,
+          wxID_ANY,
+          nullptr,
+          wxDefaultPosition,
+          wxDefaultSize,
+          wxFULL_REPAINT_ON_RESIZE,
+          "GLRenderCanvas"),
+        lastPoint(types::Coordinates::none) {
+
+    const auto clearLastPoint = [this](wxMouseEvent&) { setLastPoint(types::Coordinates::none); };
+    Bind(wxEVT_ENTER_WINDOW, clearLastPoint);
+    Bind(wxEVT_LEAVE_WINDOW, clearLastPoint);
+
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, [](wxMouseCaptureLostEvent&) {}); // No-op. Just need to suppress the event.
+
+    Bind(wxEVT_MOUSEWHEEL, [this, &settings](wxMouseEvent& evt) {
+      real delta = static_cast<real>(evt.GetWheelRotation()) / static_cast<real>(evt.GetWheelDelta() * 2);
+      switch(App::get<Settings>().renderDimensions) {
+      case options::Dimensions::two: {
+        double oldZoom = Settings::zoom1x / settings.view.zoom;
+        settings.view.zoom = Settings::zoom1x / std::clamp(
           oldZoom + ((delta * oldZoom) / Settings::zoom1x),
           Settings::minZoom,
           Settings::maxZoom);
-        statusBar.SetStatusText(std::format("zoom: {:.2f}", Settings::zoom1x / view.zoom), 2);
-        viewspace = view;
-      });
-      const auto mouseHandler = [this, &statusBar, &viewspace](wxMouseEvent& evt) {
-        if (evt.ButtonDown() && !HasCapture()) {
-          CaptureMouse();
-        }
-        else if (evt.ButtonUp() && HasCapture()) {
-          ReleaseCapture();
-        }
-        wxPoint point = evt.GetPosition();
-        wxSize size = GetSize();
-        double x = (static_cast<double>(point.x) / static_cast<double>(size.GetWidth()) * 2.0) - 1.0;
-        double y = 1.0 - (static_cast<double>(point.y) / static_cast<double>(size.GetHeight()) * 2.0);
-        Settings& settings = App::get<Settings>();
-        cltypes::Viewspace view = viewspace;
-        if (evt.Dragging() && evt.RightIsDown() && !isnan(lastPoint.x)) {
-          glm::dvec2 delta = lastPoint - glm::dvec2(x, y);
-          switch (settings.renderDimensions) {
-          case options::Dimensions::two: {
-            view.center.raw[abs(view.mapping.x) - 1] += (copysign(view.zoom, view.mapping.x) * delta.x);
-            view.center.raw[abs(view.mapping.y) - 1] += (copysign(view.zoom, view.mapping.y) * delta.y);
-            viewspace = view;
-            StateChangeEvent::fireEvent(viewChangeEvent, this);
-            break;
-          }
-          case options::Dimensions::three: {
-            glm::dvec3 trackball = settings.trackball;
-            trackball.p += delta.x;
-            trackball.t += delta.y;
-            settings.trackball = trackball;
-            break;
-          }
-          default: throw std::invalid_argument("Invalid render dimension");
-          }
-        }
-        glm::dvec2 coords = {
-          view.center.raw[abs(view.mapping.x) - 1] + (copysign(view.zoom, view.mapping.x) * x),
-          view.center.raw[abs(view.mapping.y) - 1] + (copysign(view.zoom, view.mapping.y) * y)
-        };
-        // update parameter
-        if (evt.LeftIsDown()) {
-          switch (settings.renderDimensions) {
-          case options::Dimensions::two: {
-            cltypes::Number center = view.center;
-            center.raw[abs(view.mapping.x) - 1] = coords.x;
-            center.raw[abs(view.mapping.y) - 1] = coords.y;
-            settings.parameter = center;
-            StateChangeEvent::fireEvent(EVT_ParameterChanged, this);
-            break;
-          }
-          case options::Dimensions::three: break;
-          default: throw std::invalid_argument("Invalid render dimensions");
-          }
-        }
-        statusBar.SetStatusText(std::format("{:.15f}, {:+.15f}", coords.x, coords.y), 1);
+        events::ZoomChanged::fire(this, settings.view);
+        break;
+      }
+      case options::Dimensions::three: {
+        settings.camera += delta;
+        break;
+      }
+      default: throw std::invalid_argument("Invalid render dimension");
+      }
+    });
 
-        lastPoint = glm::dvec2(x, y);
-      };
-      Bind(wxEVT_MOTION, mouseHandler);
-      Bind(wxEVT_LEFT_DOWN, mouseHandler);
-      Bind(wxEVT_LEFT_UP, mouseHandler);
-      Bind(wxEVT_RIGHT_DOWN, mouseHandler);
-      Bind(wxEVT_RIGHT_UP, mouseHandler);
-    }
+    const auto mouseHandler = [this, &settings](wxMouseEvent& evt) {
+      if (evt.ButtonDown() && !HasCapture()) {
+        CaptureMouse();
+      } else if (evt.ButtonUp() && HasCapture()) {
+        ReleaseCapture();
+      }
+      types::Coordinates currentPoint = pointCoordinates(evt.GetPosition(), GetSize());
+      if (evt.Dragging() && evt.RightIsDown() && lastPoint) {
+        types::Coordinates delta = lastPoint - currentPoint;
+        switch (App::get<Settings>().renderDimensions) {
+        case options::Dimensions::two: {
+          settings.view += delta;
+          events::ViewCenterChanged::fire(this, settings.view);
+          break;
+        }
+        case options::Dimensions::three: {
+          settings.camera += delta;
+          break;
+        }
+        default: throw std::invalid_argument("Invalid render dimension");
+        }
+      }
+      // update parameter
+      if (evt.LeftIsDown()) {
+        switch (App::get<Settings>().renderDimensions) {
+        case options::Dimensions::two: {
+          gpu::types::Number& parameter = App::get<Settings>().parameter;
+          parameter = settings.view + currentPoint;
+          events::ParameterChanged::fire(this, parameter);
+          break;
+        }
+        case options::Dimensions::three: {
+          // TODO: How can we get a parameter from a 3D view? Ray-march with a threshold?
+          break;
+        }
+        default: throw std::invalid_argument("Invalid render dimensions");
+        }
+      }
+      setLastPoint(currentPoint);
+    };
+    Bind(wxEVT_LEFT_DOWN, mouseHandler);
+    Bind(wxEVT_RIGHT_DOWN, mouseHandler);
+    Bind(wxEVT_LEFT_UP, mouseHandler);
+    Bind(wxEVT_RIGHT_UP, mouseHandler);
+    Bind(wxEVT_MOTION, mouseHandler);
+  }
+
+  void GLRenderCanvas::setLastPoint(const types::Coordinates& coordinates) {
+    lastPoint = coordinates;
+    events::CoordinatesChanged::fire(this, coordinates);
   }
 }

@@ -1,30 +1,19 @@
 #include <Fractalism/Events.hpp>
 
-namespace fractalism {
-  wxDEFINE_EVENT(EVT_ViewChanged, StateChangeEvent);
-  wxDEFINE_EVENT(EVT_ViewMappingChanged, StateChangeEvent);
-  wxDEFINE_EVENT(EVT_ParameterChanged, StateChangeEvent);
-  wxDEFINE_EVENT(EVT_PhaseViewChanged, StateChangeEvent);
-  wxDEFINE_EVENT(EVT_DynamicalViewChanged, StateChangeEvent);
+namespace fractalism::events {
 
-  template<>
-  const wxEventTypeTag<StateChangeEvent>& StateChangeEvent::viewChanged<options::Space::phase> = EVT_PhaseViewChanged;
+  #define DEFINE_EVENT(name, ...) const wxEventTypeTag<tags::name##Tag::eventType> tags::name##Tag::tag(wxNewEventType())
 
-  template<>
-  const wxEventTypeTag<StateChangeEvent>& StateChangeEvent::viewChanged<options::Space::dynamical> = EVT_DynamicalViewChanged;
-
-  StateChangeEvent::StateChangeEvent(wxEventType eventType, int winId) :
-    wxEvent(winId, eventType) {
-    ResumePropagation(wxEVENT_PROPAGATE_MAX);
-  }
-
-  wxEvent* StateChangeEvent::Clone() const {
-    return new StateChangeEvent(*this);
-  }
-
-  void StateChangeEvent::fireEvent(wxEventType eventType, wxWindow* window) {
-    StateChangeEvent evt(eventType, window->GetId());
-    evt.SetEventObject(window);
-    window->ProcessWindowEvent(evt);
-  }
+  DEFINE_EVENT(NumberChanged);
+  DEFINE_EVENT(ViewCenterChanged);
+  DEFINE_EVENT(ZoomChanged);
+  DEFINE_EVENT(ViewMappingChanged);
+  DEFINE_EVENT(ParameterChanged);
+  DEFINE_EVENT(IterationModifierChanged);
+  DEFINE_EVENT(IterationsPerFrameChanged);
+  DEFINE_EVENT(NumberSystemChanged);
+  DEFINE_EVENT(RenderDimensionsChanged);
+  DEFINE_EVENT(ResolutionChanged);
+  DEFINE_EVENT(CoordinatesChanged);
+  #undef DEFINE_EVENT
 }

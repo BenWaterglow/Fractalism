@@ -1,21 +1,23 @@
 #ifndef _FRACTALISM_UI_HPP_
 #define _FRACTALISM_UI_HPP_
 
-#include <mutex>
+#include <vector>
+#include <Fractalism/UI/UICommon.hpp>
+#include <wx/aui/framemanager.h>
 
-#include <Fractalism/UI/WxIncludeHelper.hpp>
+#include <Fractalism/Events.hpp>
+#include <Fractalism/UI/ViewWindow.hpp>
 
-namespace fractalism {
-  namespace ui {
-    class UI : public wxFrame {
-    public:
-      UI();
-    private:
-      void updateFps();
-      std::once_flag setupGpuFlag;
-      wxLongLong lastRenderMillis;
-      double fps;
-    };
-  }
+namespace fractalism::ui {
+  class UI : public wxFrame {
+  public:
+    UI();
+  private:
+    void updateFps();
+    wxAuiManager frameManager;
+    wxLongLong lastRenderMillis;
+    std::vector<ViewWindow*> viewWindows;
+    double fps;
+  };
 }
 #endif

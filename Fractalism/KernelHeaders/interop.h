@@ -23,7 +23,7 @@
   // We are in the host machine compiler.
   #define _ON_GPU_ 0
   // Include the OpenCL headers and #define a few CL keywords.
-  #include <Fractalism/GPU/OpenCL/CLIncludeHelper.hpp>
+  #include <Fractalism/GPU/OpenCL/CLCommon.hpp>
   #define __constant const
   #define __global
   #define __write_only

@@ -28,18 +28,19 @@ target_sources(${PROJECT_NAME} PRIVATE
     Exceptions.cpp
     Exceptions.hpp
     Options.hpp
-    Proxy.hpp
     Settings.cpp
     Settings.hpp
     Utils.cpp
-    Utils.hpp)
+    Utils.hpp
+    ViewWindowSettings.cpp
+    ViewWindowSettings.hpp)
 
 add_subdirectory("GPU")
 add_subdirectory("UI")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE wx::wxcore wx::wxbase wx::wxgl GLEW::glew OpenCL::OpenCL)
+target_link_libraries(${PROJECT_NAME} PRIVATE wx::wxcore wx::wxbase wx::wxgl wx::wxaui GLEW::glew OpenCL::OpenCL)
 target_include_directories(${PROJECT_NAME} PRIVATE glm::glm-header-only ${PROJECT_SOURCE_DIR})
-target_compile_definitions(${PROJECT_NAME} PRIVATE USE_DOUBLE_MATH MAX_NUMBER_SYSTEM_SIZE=8)
+target_compile_definitions(${PROJECT_NAME} PRIVATE USE_DOUBLE_MATH MAX_NUMBER_SYSTEM_SIZE=4)
 
 add_custom_target(copy_shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
@@ -55,8 +56,11 @@ add_custom_target(copy_kernels
 
 add_dependencies(${PROJECT_NAME} copy_shaders copy_kernels)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
-endif()
+if (MSVC)
+    # Enable __VA_OPT__ since MS is weird
+    target_compile_options(${PROJECT_NAME} PRIVATE "/Zc:preprocessor" "/std:c++latest")
+else (MSVC)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
+endif (MSVC)
 
 # TODO: Add tests and install targets if needed.

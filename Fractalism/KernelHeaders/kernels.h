@@ -32,15 +32,15 @@ _PACK_BEGIN_ struct work_store_buffer {
 typedef struct work_store_buffer work_store_buffer;
 
 typedef struct work_dimensions {
-  int width;
-  int height;
-  int depth;
+  size_t width;
+  size_t height;
+  size_t depth;
 } work_dimensions;
 
 typedef struct work_item_location {
-  int x;
-  int y;
-  int z;
+  size_t x;
+  size_t y;
+  size_t z;
 } work_item_location;
 
 typedef struct work_item {
@@ -53,23 +53,23 @@ typedef struct work_store_item {
   __global work_store* p;
 } work_store_item;
 
-static inline work_item get_work_item(__write_only image3d_t output) {
+static inline work_item get_work_item() {
   return (work_item) {
-    {
+    .location = {
       get_global_id(0),
       get_global_id(1),
       get_global_id(2)
     },
-  {
-    get_image_width(output),
-    get_image_height(output),
-    get_image_depth(output)
-  }
+    .dimensions = {
+      get_global_size(0),
+      get_global_size(1),
+      get_global_size(2)
+    }
   };
 }
 
-static inline work_store_item get_work_store_item(__write_only image3d_t output, __global work_store_buffer* buffer) {
-  work_item item = get_work_item(output);
+static inline work_store_item get_work_store_item(__global work_store_buffer* buffer) {
+  work_item item = get_work_item();
 
   size_t index = (item.location.z * item.dimensions.height * item.dimensions.width) + (item.location.y * item.dimensions.width) + item.location.x;
 
@@ -82,8 +82,8 @@ static inline work_store_item get_work_store_item(__write_only image3d_t output,
 static inline float4 location_to_color(work_item item) {
   return (float4)(
     ((float)item.location.x) / ((float)item.dimensions.width),
-    ((float)item.location.y) / ((float)item.dimensions.height),
     ((float)item.location.z) / ((float)item.dimensions.depth),
+    ((float)item.location.y) / ((float)item.dimensions.height),
     8.0/sqrt((real)(item.dimensions.width*item.dimensions.width +
              item.dimensions.height*item.dimensions.height +
              item.dimensions.depth*item.dimensions.depth)));
@@ -94,10 +94,10 @@ __kernel void name##_##number_system( \
     __write_only image3d_t output, \
     __global work_store_buffer *buffer, \
     viewspace view, \
-    number param, \
+    number parameter, \
     unsigned int last_iteration, \
     unsigned int max_iterations) { \
-  work_store_item store_item = get_work_store_item(output, buffer); \
+  work_store_item store_item = get_work_store_item(buffer); \
   number_system_type c = c_value; \
   number_system_type z; \
   int i; \
@@ -164,7 +164,7 @@ create_escape_and_translated_kernels( \
 #define create_dynamical_kernels(function, escape, number_system, number_system_type) \
 create_escape_and_translated_kernels( \
     dynamical, \
-    number_system##_from_raw(param.raw, 0), \
+    number_system##_from_raw(parameter.raw, 0), \
     apply_view_mapping_##number_system(view, store_item.item), \
     function, \
     escape, \

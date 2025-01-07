@@ -14,6 +14,7 @@
 #include <OpenCL/opencl.hpp>
 #else
 #include <CL/opencl.hpp>
+#include <CL/cl_gl.h>
 #endif
 #pragma warning(pop)
 

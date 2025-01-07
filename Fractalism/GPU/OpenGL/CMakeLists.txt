@@ -1,4 +1,6 @@
 target_sources (${PROJECT_NAME} PRIVATE
+  ArcballCamera.cpp
+  ArcballCamera.hpp
   GLRenderer.cpp
   GLRenderer.hpp
   GLShader.cpp
