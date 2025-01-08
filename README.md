@@ -105,6 +105,16 @@ If you want to contribute to this project, raise an issue and/or submit a pull r
 If you would like to financially support the project, you can do so using
 [PayPal](https://paypal.me/waterglow).
 
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Miscellaneous development notes
+The OpenCL kernels are all built at runtime using C preprocessor macro metaprogramming.
+This is because my development machine is quite outdated, and does not support OpenCL C++.
+
+For a detailed explanation of the ray-marching algorithm used in this program, see the
+[RayMarching.md](RayMarching.md) file.
+
 [^1]: Note that the resolution is ***not*** related to the size of the render window.
 It is the size of the rendering textures and computation buffers. Currently, if the
 requested render size exceeds the capacity of VRAM, the program will display an error
