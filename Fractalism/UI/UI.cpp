@@ -78,12 +78,16 @@ namespace fractalism::ui {
     size_t gridSize = static_cast<size_t>(std::ceil(std::sqrt(static_cast<double>(viewWindowCount))));
     std::vector<ViewWindow*>& viewWindows = this->viewWindows;
     viewWindows.reserve(viewWindowCount);
+    int width = -1;
+    int height = -1;
     for (size_t i = 0; i < viewWindowCount; i++) {
       ViewWindow* viewWindow = new ViewWindow(*this, i);
-      int width;
-      int height;
-      viewWindow->GetBestSize(&width, &height);
-      width += height;
+      // Only get the width and height of the first window, and use that for all.
+      if (width == -1) {
+        viewWindow->GetBestSize(&width, &height);
+        height += 50; // Add a little extra height for the toolbar.
+        width += height; // Make the window square and allow the gl canvas to expand.
+      }
       frameManager.AddPane(viewWindow, wxAuiPaneInfo()
         .Name(viewWindow->GetName())
         .Caption(viewWindow->GetName())

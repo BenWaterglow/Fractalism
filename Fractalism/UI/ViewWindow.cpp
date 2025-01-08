@@ -47,6 +47,7 @@ namespace fractalism::ui {
       .CaptionVisible(true)
       .Dock()
       .Left()
+      .Show(kernel.settings.renderMode == options::RenderMode::escape)
       .CloseButton(false)
       .Gripper(false)
       .Floatable(false)
