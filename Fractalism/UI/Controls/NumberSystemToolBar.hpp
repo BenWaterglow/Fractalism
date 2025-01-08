@@ -4,13 +4,27 @@
 #include <wx/aui/auibar.h>
 
 namespace fractalism::ui::controls {
-  class NumberSystemToolBar : public wxAuiToolBar {
-  public:
-    NumberSystemToolBar(wxWindow& parent);
-    void updateNumberSystem();
-  private:
-    wxRadioBox &radioBox;
-  };
-}
+
+/**
+ * @class NumberSystemToolBar
+ * @brief A toolbar for selecting the number system.
+ */
+class NumberSystemToolBar : public wxAuiToolBar {
+public:
+  /**
+   * @brief Constructs a NumberSystemToolBar.
+   * @param parent The parent window.
+   */
+  NumberSystemToolBar(wxWindow& parent);
+
+  /**
+   * @brief Updates the number system selection.
+   */
+  void updateNumberSystem();
+
+private:
+  wxRadioBox& radioBox; ///< Radio box for selecting the number system.
+};
+} // namespace fractalism::ui::controls
 
 #endif

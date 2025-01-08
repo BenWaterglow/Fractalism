@@ -40,7 +40,7 @@ namespace fractalism::gpu::opengl {
     return position;
   }
 
-  const types::mat4 ArcballCamera::createViewMatrix() const {
+  types::mat4 ArcballCamera::createViewMatrix() const {
     return glm::lookAt(
         position,
         types::vec3{ 0.0, 0.0, 0.0 },

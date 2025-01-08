@@ -1,11 +1,7 @@
-#ifndef _FRACTALISM_CL_INCLUDE_HELPER_HPP_
-#define _FRACTALISM_CL_INCLUDE_HELPER_HPP_
+#ifndef _FRACTALISM_CL_COMMON_HPP_
+#define _FRACTALISM_CL_COMMON_HPP_
 
-#pragma warning(push)
-#pragma warning(disable : 4510)
-#pragma warning(disable : 4512)
-#pragma warning(disable : 4610)
-#pragma warning(disable : 26439)
+#pragma warning(push, 0)
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_TARGET_OPENCL_VERSION 220
@@ -18,4 +14,4 @@
 #endif
 #pragma warning(pop)
 
-#endif // !_CL_INCLUDE_HELPER_HPP_
+#endif // end include guard.

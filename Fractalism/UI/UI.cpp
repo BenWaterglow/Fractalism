@@ -80,12 +80,19 @@ namespace fractalism::ui {
     viewWindows.reserve(viewWindowCount);
     for (size_t i = 0; i < viewWindowCount; i++) {
       ViewWindow* viewWindow = new ViewWindow(*this, i);
+      int width;
+      int height;
+      viewWindow->GetBestSize(&width, &height);
+      width += height;
       frameManager.AddPane(viewWindow, wxAuiPaneInfo()
-        .CenterPane()
-        .DestroyOnClose(true)
+        .Name(viewWindow->GetName())
+        .Caption(viewWindow->GetName())
+        .CaptionVisible(true)
+        .DestroyOnClose(false)
         .Dockable(false)
-        .Floatable(true)
-        .Layer(1).Row(i % gridSize).Position(i / gridSize));
+        .FloatingSize(width, height)
+        .FloatingPosition(width * (i % gridSize), height * (i / gridSize)) // Stagger the floating windows
+        .Float());
       viewWindows.push_back(viewWindow);
       viewWindow->Bind(events::ParameterChanged::tag, [&viewWindows, &parameterToolBar](events::ParameterChanged::eventType& event) {
         for (ViewWindow* viewWindow : viewWindows) {
@@ -124,11 +131,13 @@ namespace fractalism::ui {
       updateFps();
       evt.RequestMore();
     });
-    SetSize(wxSize(1800, 1000));
-    SetPosition(wxPoint(0, 0));
     SetStatusText("Fractalism");
     SetStatusText(std::format("Resolution: {}", App::get<Settings>().resolution), 3);
     frameManager.Update();
+    wxSize size = GetBestSize();
+    SetSize(size);
+    wxSize displaySize = wxGetDisplaySize();
+    SetPosition(wxPoint(displaySize.x - size.x, 0));
   }
 
   void UI::updateFps() {

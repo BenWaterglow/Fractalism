@@ -16,6 +16,7 @@ namespace fractalism::ui {
       viewspaceToolBar(*new controls::ViewspaceToolBar(*this, kernel.settings.view)),
       iterationToolBar(*new controls::IterationToolBar(*this, kernel.settings)),
       auiManager(this, wxAUI_MGR_DEFAULT | wxAUI_MGR_LIVE_RESIZE) {
+    SetName(options::name(kernel.settings.space) + " " + options::name(kernel.settings.renderMode));
     auiManager.SetManagedWindow(this);
     wxWindow* renderCanvasParent = renderCanvas.GetParent();
     wxSizer *renderCanvasSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -23,9 +24,6 @@ namespace fractalism::ui {
     renderCanvasParent->SetSizerAndFit(renderCanvasSizer);
     auiManager.AddPane(renderCanvasParent, wxAuiPaneInfo()
       .CenterPane()
-      .Name(options::name(kernel.settings.space) + " " + options::name(kernel.settings.renderMode))
-      .Caption(options::name(kernel.settings.space) + " " + options::name(kernel.settings.renderMode))
-      .CaptionVisible(true)
       .CloseButton(false)
       .Gripper(false)
       .Movable(false)
