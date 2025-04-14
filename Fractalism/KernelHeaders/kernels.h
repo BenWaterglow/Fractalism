@@ -11,13 +11,12 @@
 
 _EXTERN_C_DECL_
 
-// The value of log(0.5) - log(log(2.0))
-__constant float log_half_minus_log_log_2 = -0.32663425997828094f;
-
-static inline float4 fractional_escape_color(real modulus_squared, int max_iterations, int iteration) {
-  // Normalize the ratio of the current iteration minus log(log(modulus)/log(2)) and the maximum iterations
-  return spectral_color(
-    (((float)iteration) - log(log((float)modulus_squared)) + log_half_minus_log_log_2) / (float)max_iterations);
+static inline float4 fractional_escape_color(real modulus_squared, unsigned int max_iterations, unsigned int iteration) {
+  // Normalize the ratio of the current iteration minus log(log(modulus))/log(2) and the maximum iterations
+  real value = ((((real)iteration) - log(log(modulus_squared) / 2.0) + ((real)M_LN2)) / (real)max_iterations);
+  return (iteration < max_iterations) ?
+    spectral_color((float) value) :
+    (float4)(0.0f, 0.0f, 0.0f, (float) (value * value));
 }
 
 #if !defined(CL_DEVICE_MAX_MEM_ALLOC_SIZE)
