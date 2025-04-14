@@ -45,7 +45,7 @@ __constant struct {
 };
 
 static inline void process_spectral_color_term(float* coefficients, float value, spectral_color_term term) {
-  // Effectively 1.0 for values outside the rage (low, high), and 1.0 within it.
+  // Effectively 0.0 for values outside the rage (low, high), and 1.0 within it.
   float in_range = is_in_range(value, term.range);
   coefficients[0] += in_range * term.second_order;
   coefficients[1] += in_range * term.first_order;
@@ -53,7 +53,6 @@ static inline void process_spectral_color_term(float* coefficients, float value,
 }
 
 static float4 spectral_color(float value) {
-  // value (0,1) <=> wavelength in nm (400,700). 
   float r[3] = { 0.0 };
   process_spectral_color_term(r, value, spectral_color_terms.r[0]);
   process_spectral_color_term(r, value, spectral_color_terms.r[1]);
