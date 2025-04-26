@@ -3,22 +3,22 @@
 #include <limits>
 #include <cmath>
 
-#include <Fractalism/Settings.hpp>
 #include <Fractalism/Events.hpp>
 
 namespace fractalism::ui::controls {
   namespace {
-    static constexpr int zoomToInt(real zoom) {
-      return (zoom / Settings::maxZoom) * static_cast<real>(std::numeric_limits<int>::max());
+    static const real lnMax(std::log(gpu::types::Viewspace::maxZoom));
+    static const real lnMin(std::log(gpu::types::Viewspace::minZoom));
+    static const unsigned int sliderSteps(100);
+
+    static int zoomToInt(real zoom) {
+      static const real modifier = real(sliderSteps) / (lnMax - lnMin);
+      return (std::log(zoom) - lnMin) * modifier;
     }
 
-    static constexpr real intToZoom(int value) {
-      return ((static_cast<real>(value) / static_cast<real>(std::numeric_limits<int>::max())) * Settings::maxZoom);
+    static real intToZoom(int value) {
+      return gpu::types::Viewspace::minZoom * std::exp((real(value)/real(sliderSteps))*(lnMax - lnMin));
     }
-    // TODO: move this stuff to gpu::types::Viewspace
-    static_assert(zoomToInt(Settings::zoom1x) == 0);
-    static_assert(zoomToInt(Settings::maxZoom) == std::numeric_limits<int>::max());
-    static_assert(intToZoom(std::numeric_limits<int>::max()) == Settings::maxZoom);
   }
       
   ZoomControl::ZoomControl(wxWindow& parent, real& zoom) :
@@ -27,8 +27,8 @@ namespace fractalism::ui::controls {
         this,
         wxID_ANY,
         zoomToInt(zoom),
-        zoomToInt(Settings::minZoom),
-        zoomToInt(Settings::maxZoom))),
+        zoomToInt(gpu::types::Viewspace::minZoom),
+        zoomToInt(gpu::types::Viewspace::maxZoom))),
       zoom(zoom) {
     SetLabel("Zoom");
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);

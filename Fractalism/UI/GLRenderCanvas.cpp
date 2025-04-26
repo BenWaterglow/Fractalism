@@ -38,14 +38,13 @@ namespace fractalism::ui {
     Bind(wxEVT_MOUSE_CAPTURE_LOST, [](wxMouseCaptureLostEvent&) {}); // No-op. Just need to suppress the event.
 
     Bind(wxEVT_MOUSEWHEEL, [this, &settings](wxMouseEvent& evt) {
-      real delta = static_cast<real>(evt.GetWheelRotation()) / static_cast<real>(evt.GetWheelDelta() * 2);
+      real delta = -static_cast<real>(evt.GetWheelRotation()) / static_cast<real>(evt.GetWheelDelta() * 2);
       switch(App::get<Settings>().renderDimensions) {
       case options::Dimensions::two: {
-        double oldZoom = Settings::zoom1x / settings.view.zoom;
-        settings.view.zoom = Settings::zoom1x / std::clamp(
-          oldZoom + ((delta * oldZoom) / Settings::zoom1x),
-          Settings::minZoom,
-          Settings::maxZoom);
+        settings.view.zoom = std::clamp(
+          std::exp(std::log(settings.view.zoom) + delta),
+          gpu::types::Viewspace::minZoom,
+          gpu::types::Viewspace::maxZoom);
         events::ZoomChanged::fire(this, settings.view);
         break;
       }

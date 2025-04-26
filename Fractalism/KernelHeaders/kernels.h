@@ -99,7 +99,7 @@ __kernel void name##_##number_system( \
   work_store_item store_item = get_work_store_item(buffer); \
   number_system_type c = c_value; \
   number_system_type z; \
-  int i; \
+  unsigned int i; \
   if (last_iteration == 0) { \
     z = z0_value; \
     i = 0; \
@@ -171,11 +171,11 @@ create_escape_and_translated_kernels( \
     number_system_type)
 
 static inline void apply_view_mapping_element(real* raw, real zoom, char view_mapping, int location, int range) {
-  raw[abs(view_mapping)] = ((((real)location) / ((real)range)) * 2.0 - 1.0) * copysign(zoom, (real)(view_mapping));
+  raw[abs(view_mapping)] = ((((real)location) / ((real)range)) * 2.0 - 1.0) / copysign(zoom, (real)(view_mapping));
 }
 
 static inline int reverse_view_mapping_element(real* raw, real zoom, char view_mapping, int range) {
-  return convert_int_rte((((real)range)) * ((raw[abs(view_mapping)] / (2.0 * copysign(zoom, (real)view_mapping))) + 0.5));
+  return convert_int_rte((((real)range) * ((raw[abs(view_mapping)] * copysign(zoom, (real)view_mapping)) + 1.0)) / 2.0);
 }
 
 #define create_view_mapping_functions(number_system, number_system_type) \

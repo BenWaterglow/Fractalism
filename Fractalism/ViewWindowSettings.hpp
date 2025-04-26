@@ -55,8 +55,9 @@ struct ViewWindowSettings {
     switch (renderMode) {
     case options::RenderMode::escape:
       return static_cast<cl_uint>(std::clamp(
-          iterationModifier * pow(2.0, log10((zoom1x / view.zoom) / 2.0)),
-          minIterations, maxIterations));
+          iterationModifier * pow(2.0, log10((view.zoom))),
+          minIterations,
+          maxIterations));
     case options::RenderMode::translated:
       return maxIterations;
     default:

@@ -79,12 +79,12 @@ namespace fractalism::ui {
     renderCanvas.Bind(events::ZoomChanged::tag, [this](events::ZoomChanged::eventType& event) {
       kernel.updateView();
       viewspaceToolBar.updateZoom();
-      statusBar.SetStatusText(std::format("zoom: {:.2f}", Settings::zoom1x / event.getValue()), 1);
+      statusBar.SetStatusText(std::format("zoom: {:.2f}", event.getValue()), 1);
       event.Skip(); // Pass the event up after updating the tool bar and displaying.
     });
     viewspaceToolBar.Bind(events::ZoomChanged::tag, [this](events::ZoomChanged::eventType& event) {
       kernel.updateView();
-      statusBar.SetStatusText(std::format("zoom: {:.2f}", Settings::zoom1x / event.getValue()), 1);
+      statusBar.SetStatusText(std::format("zoom: {:.2f}", event.getValue()), 1);
       event.Skip(); // Pass the event up after displaying the zoom
     });
     iterationToolBar.Bind(events::IterationModifierChanged::tag, [this](events::IterationModifierChanged::eventType& event) {
@@ -148,7 +148,7 @@ namespace fractalism::ui {
   void ViewWindow::updateZoom() {
     kernel.updateView();
     viewspaceToolBar.updateZoom();
-    statusBar.SetStatusText(std::format("zoom: {:.2f}", Settings::zoom1x / kernel.settings.view.zoom), 1);
+    statusBar.SetStatusText(std::format("zoom: {:.2f}", kernel.settings.view.zoom), 1);
   }
 
   void ViewWindow::updateNumberSystem() {

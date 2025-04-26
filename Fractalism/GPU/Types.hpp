@@ -98,10 +98,10 @@ struct Number : public cltypes::number {
       real zoom,
       const Coordinates& coordinates) {
     if (mapping.x) {
-      raw[abs(mapping.x) - 1] += (copysign(zoom, mapping.x) * coordinates.x);
+      raw[abs(mapping.x) - 1] += (coordinates.x / copysign(zoom, mapping.x));
     }
     if (mapping.y) {
-      raw[abs(mapping.y) - 1] += (copysign(zoom, mapping.y) * coordinates.y);
+      raw[abs(mapping.y) - 1] += (coordinates.y / copysign(zoom, mapping.y));
     }
     return *this;
   }
@@ -127,6 +127,9 @@ struct Number : public cltypes::number {
  * and axis mappings.
  */
 struct Viewspace {
+  
+  static constexpr real minZoom = 0.1;    ///< Minimum zoom level.
+  static constexpr real maxZoom = 1.0e15; ///< Maximum zoom level.
 
   /**
    * @brief Default constructor initializing viewspace with zero zoom and

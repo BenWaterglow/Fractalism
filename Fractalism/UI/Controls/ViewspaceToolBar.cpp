@@ -12,8 +12,7 @@ namespace fractalism::ui::controls {
         zoom(*new ZoomControl(*this, viewspace.zoom)) {
     AddControl(&numberInput, "Center");
     AddControl(&viewMapping, "View Axis Mapping");
-    AddControl(&zoom, "Zoom")->SetLabel("");
-    zoom.Show(false); // TODO: re-enable when zoom is properly implemented.
+    AddControl(&zoom, "Zoom");
     updateCenter();
     updateViewMapping();
     updateZoom();

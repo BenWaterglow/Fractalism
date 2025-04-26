@@ -18,7 +18,7 @@ namespace fractalism::gpu::types {
 
   Viewspace::Viewspace(real x, real y, real z) :
         center(x, y, z),
-        zoom(Settings::zoom1x),
+        zoom(0.5),
         mapping{ 1, 2, 3 } {}
 
   void Viewspace::asKernelArg(cl::Kernel& kernel, cl_uint index) const {
