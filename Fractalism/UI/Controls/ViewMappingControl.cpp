@@ -59,12 +59,11 @@ namespace fractalism::ui::controls {
     events::ViewMappingChanged::fire(this->GetContainingWindow(), mapping);
   }
 
-  ViewMappingControl::ViewMappingControl(wxWindow & parent, wxString label, types::ViewMapping & mapping) :
+  ViewMappingControl::ViewMappingControl(wxWindow & parent, types::ViewMapping & mapping) :
         wxControl(&parent, wxID_ANY),
         x(*new Row<&types::ViewMapping::x>(*this, "x=>", mapping)),
         y(*new Row<&types::ViewMapping::y>(*this, "y=>", mapping)),
         z(*new Row<&types::ViewMapping::z>(*this, "z=>", mapping)) {
-    SetLabel(label);
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     for (wxBoxSizer* row : std::initializer_list<wxBoxSizer*>{ &x, &y, &z }) {
       sizer->Add(row);

@@ -12,10 +12,11 @@ namespace fractalism::ui::controls {
 
   RenderSettingsToolBar::RenderSettingsToolBar(wxWindow& parent) :
         wxAuiToolBar(&parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_TB_TEXT | wxAUI_TB_VERTICAL),
-        dimensions(*new wxRadioBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 2, dimensionLabels)),
+        dimensions(*new wxRadioBox(this, wxID_ANY, "Dimensions", wxDefaultPosition, wxDefaultSize, 2, dimensionLabels)),
         resolution(*new wxSlider(this, wxID_ANY, App::get<Settings>().resolution[0] / 64, 1, 20)) {
-    AddControl(&dimensions, "Dimensions");
-    AddControl(&resolution, "Resolution");
+    AddControl(&dimensions);
+    AddLabel(resolution.GetId(), "Resolution");
+    AddControl(&resolution);
     dimensions.Bind(wxEVT_RADIOBOX, [this](wxCommandEvent& evt) {
       events::RenderDimensionsChanged::fire(this, App::get<Settings>().setRenderDimensions(utils::fromUnderlyingType<options::Dimensions>(evt.GetInt())));
     });

@@ -10,8 +10,10 @@ namespace fractalism::ui::controls {
         settings(settings),
         iterationModifier(*new wxSlider(this, wxID_ANY, settings.iterationModifier / 5, 1, 100)),
         iterationsPerFrame(*new wxSlider(this, wxID_ANY, settings.iterationsPerFrame, 1, 1000)) {
-    AddControl(&iterationModifier, "Iteration Modifier");
-    AddControl(&iterationsPerFrame, "Iterations Per Frame");
+    AddLabel(iterationModifier.GetId(), "Iteration Modifier");
+    AddControl(&iterationModifier);
+    AddLabel(iterationsPerFrame.GetId(), "Iterations Per Frame");
+    AddControl(&iterationsPerFrame);
 
     iterationModifier.Bind(wxEVT_SLIDER, [this, &iterationModifier = settings.iterationModifier](wxCommandEvent& evt) {
       iterationModifier = evt.GetInt() * 5.0;

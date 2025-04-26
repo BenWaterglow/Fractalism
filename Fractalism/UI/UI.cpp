@@ -15,7 +15,7 @@ struct std::formatter<cl::NDRange> {
     return ctx.end();
   }
 
-  auto format(cl::NDRange range, std::format_context& ctx) const {
+  auto format(const cl::NDRange& range, std::format_context& ctx) const {
     switch(range.dimensions()) {
     case 0: return std::format_to(ctx.out(), "0");
     case 1: return std::format_to(ctx.out(), "{}", range[0]);
@@ -34,7 +34,7 @@ namespace fractalism::ui {
           fps(0.0),
           frameManager(this, wxAUI_MGR_DEFAULT | wxAUI_MGR_LIVE_RESIZE) {
     SetMenuBar(new MenuBar());
-    CreateStatusBar(5);
+    CreateStatusBar();
 
     frameManager.SetManagedWindow(this);
 
@@ -121,22 +121,18 @@ namespace fractalism::ui {
       for (ViewWindow* viewWindow : this->viewWindows) {
         viewWindow->updateRenderDimensions();
       }
-      SetStatusText(std::format("Resolution: {}", App::get<Settings>().resolution), 3);
     });
     renderSettingsToolBar.Bind(events::ResolutionChanged::tag, [this](events::ResolutionChanged::eventType& event) {
       App::get<gpu::opencl::ProgramManager>().updateResolution();
       for (ViewWindow* viewWindow : this->viewWindows) {
         viewWindow->updateRenderDimensions();
       }
-      SetStatusText(std::format("Resolution: {}", event.getValue()), 3);
     });
     Bind(wxEVT_IDLE, [this](wxIdleEvent &evt) {
       App::render(this->viewWindows);
       updateFps();
       evt.RequestMore();
     });
-    SetStatusText("Fractalism");
-    SetStatusText(std::format("Resolution: {}", App::get<Settings>().resolution), 3);
     frameManager.Update();
     wxSize size = GetBestSize();
     SetSize(size);
@@ -153,6 +149,6 @@ namespace fractalism::ui {
     if (isnan(fps) || isinf(fps)) {
       fps = 0.0;
     }
-    SetStatusText(std::format("FPS: {:.2f}", fps), 4);
+    SetStatusText(std::format("{:.02f} FPS @ {}", fps, App::get<Settings>().resolution));
   }
 }

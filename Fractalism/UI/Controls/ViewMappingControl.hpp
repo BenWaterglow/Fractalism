@@ -20,7 +20,6 @@ public:
    */
   ViewMappingControl(
       wxWindow& parent,
-      wxString label,
       gpu::types::ViewMapping& mapping);
 
   /**

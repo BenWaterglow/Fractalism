@@ -7,8 +7,8 @@
 namespace fractalism::ui::controls {
   ParameterToolBar::ParameterToolBar(wxWindow& parent) :
         wxAuiToolBar(&parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_TB_VERTICAL),
-        control(*new HypercomplexNumberControl(*this, "Parameter", App::get<Settings>().parameter)) {
-    AddControl(&control, "Parameter");
+        control(*new HypercomplexNumberControl(*this, App::get<Settings>().parameter)) {
+    AddControl(&control);
 
     control.Bind(events::NumberChanged::tag, [this](const events::NumberChanged::eventType& event) {
       events::ParameterChanged::fire(this, event.getValue());

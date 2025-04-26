@@ -13,10 +13,9 @@ namespace fractalism::ui::controls {
     constexpr size_t fieldCount = MAX_NUMBER_SYSTEM_SIZE;
   }
 
-  HypercomplexNumberControl::HypercomplexNumberControl(wxWindow& parent, wxString label, types::Number& number) :
+  HypercomplexNumberControl::HypercomplexNumberControl(wxWindow& parent, types::Number& number) :
       wxControl(&parent, wxID_ANY),
       number(number) {
-    SetLabel(label);
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     for (int i = 0; i < fieldCount; i++) {
       sizer->Add(controls[i] = new TextControl(*this, i, number));

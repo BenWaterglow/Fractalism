@@ -7,12 +7,15 @@ namespace fractalism::ui::controls {
   ViewspaceToolBar::ViewspaceToolBar(wxWindow & parent, types::Viewspace & viewspace) :
         wxAuiToolBar(&parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_TB_TEXT | wxAUI_TB_VERTICAL),
         view(viewspace),
-        numberInput(*new HypercomplexNumberControl(*this, "Center", viewspace.center)),
-        viewMapping(*new ViewMappingControl(*this, "View Axis Mapping", viewspace.mapping)),
+        numberInput(*new HypercomplexNumberControl(*this, viewspace.center)),
+        viewMapping(*new ViewMappingControl(*this, viewspace.mapping)),
         zoom(*new ZoomControl(*this, viewspace.zoom)) {
-    AddControl(&numberInput, "Center");
-    AddControl(&viewMapping, "View Axis Mapping");
-    AddControl(&zoom, "Zoom");
+    AddLabel(numberInput.GetId(), "Center");
+    AddControl(&numberInput);
+    AddLabel(viewMapping.GetId(), "View Axis Mapping");
+    AddControl(&viewMapping);
+    AddLabel(zoom.GetId(), "Zoom");
+    AddControl(&zoom);
     updateCenter();
     updateViewMapping();
     updateZoom();

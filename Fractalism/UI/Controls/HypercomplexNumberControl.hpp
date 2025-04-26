@@ -53,12 +53,10 @@ public:
   /**
    * @brief Constructs a HypercomplexNumberControl.
    * @param parent The parent window.
-   * @param label The label for the control.
    * @param number The hypercomplex number.
    */
   HypercomplexNumberControl(
       wxWindow& parent,
-      wxString label,
       gpu::types::Number& number);
 
   /**
