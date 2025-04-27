@@ -81,7 +81,7 @@ static inline work_store_item get_work_store_item(__global work_store_buffer* bu
 static inline float4 location_to_color(work_item item) {
   return (float4)(
     ((float)item.location.x) / ((float)item.dimensions.width),
-    ((float)item.location.z) / ((float)item.dimensions.depth),
+    0.5 + ((float)item.location.z) / (2.0 * (float)item.dimensions.depth),
     ((float)item.location.y) / ((float)item.dimensions.height),
     8.0/sqrt((real)(item.dimensions.width*item.dimensions.width +
              item.dimensions.height*item.dimensions.height +
