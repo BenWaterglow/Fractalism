@@ -27,7 +27,7 @@ namespace fractalism::ui::controls {
 
   void HypercomplexNumberControl::updateNumber() {
     for (int i = 0; i < fieldCount; i++) {
-      controls[i]->SetValue(std::format("{:.15f}", number.raw[i]));
+      controls[i]->ChangeValue(std::format("{:.15f}", number.raw[i]));
     }
   }
 

@@ -72,28 +72,29 @@ namespace fractalism::ui {
       }
     });
     renderCanvas.Bind(events::ViewCenterChanged::tag, [this](events::ViewCenterChanged::eventType& event) {
-      kernel.updateView();
       viewspaceToolBar.updateCenter();
-      event.Skip(); // Pass the event up after updating the tool bar.
+      onViewChanged();
     });
     renderCanvas.Bind(events::ZoomChanged::tag, [this](events::ZoomChanged::eventType& event) {
-      kernel.updateView();
       viewspaceToolBar.updateZoom();
       statusBar.SetStatusText(std::format("zoom: {:.2f}", event.getValue()), 1);
-      event.Skip(); // Pass the event up after updating the tool bar and displaying.
+      onViewChanged();
+    });
+    viewspaceToolBar.Bind(events::ViewCenterChanged::tag, [this](events::ViewCenterChanged::eventType& event) {
+      onViewChanged();
+    });
+    viewspaceToolBar.Bind(events::ViewMappingChanged::tag, [this](events::ViewMappingChanged::eventType& event) {
+      onViewChanged();
     });
     viewspaceToolBar.Bind(events::ZoomChanged::tag, [this](events::ZoomChanged::eventType& event) {
-      kernel.updateView();
       statusBar.SetStatusText(std::format("zoom: {:.2f}", event.getValue()), 1);
-      event.Skip(); // Pass the event up after displaying the zoom
+      onViewChanged();
     });
     iterationToolBar.Bind(events::IterationModifierChanged::tag, [this](events::IterationModifierChanged::eventType& event) {
       statusBar.SetStatusText(std::format("Iteration Modifier: {:.4f}", event.getValue()), 2);
-      event.Skip(); // Pass it on up after display
     });
     iterationToolBar.Bind(events::IterationsPerFrameChanged::tag, [this](events::IterationsPerFrameChanged::eventType& event) {
       statusBar.SetStatusText(std::format("Iterations Per Frame: {}", event.getValue()), 3);
-      event.Skip(); // Pass it on up after display
     });
     // TODO: implement center parameter, screenshot, and video capture tools.
 
@@ -106,6 +107,7 @@ namespace fractalism::ui {
     // These are fine. They are picked up on kernel execution.
     updateIterationModifier();
     updateIterationsPerFrame();
+    statusBar.SetStatusText(std::format("zoom: {:.2f}", kernel.settings.view.zoom), 1);
     auiManager.Update();
   }
 
@@ -133,6 +135,14 @@ namespace fractalism::ui {
 
   void ViewWindow::updateParameter() {
     kernel.updateParameter();
+  }
+
+  void ViewWindow::updateView() {
+    kernel.updateView();
+    viewspaceToolBar.updateCenter();
+    viewspaceToolBar.updateViewMapping();
+    viewspaceToolBar.updateZoom();
+    statusBar.SetStatusText(std::format("zoom: {:.2f}", kernel.settings.view.zoom), 1);
   }
 
   void ViewWindow::updateCenter() {
@@ -169,5 +179,10 @@ namespace fractalism::ui {
   void ViewWindow::updateIterationsPerFrame() {
     iterationToolBar.updateIterationsPerFrame();
     statusBar.SetStatusText(std::format("Iterations Per Frame: {}", kernel.settings.iterationsPerFrame), 3);
+  }
+
+  void ViewWindow::onViewChanged() {
+    kernel.updateView();
+    events::ViewChanged::fire(this, kernel.settings.view);
   }
 }

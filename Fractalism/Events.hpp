@@ -137,6 +137,7 @@ struct Event {
   struct name : public Event<tags::name##Tag##__VA_OPT__(, )__VA_ARGS__> {}
 
 DECLARE_EVENT(NumberChanged, StateChangeEvent<gpu::types::Number>);
+DECLARE_EVENT(ViewChanged, StateChangeEvent<gpu::types::Viewspace>);
 DECLARE_EVENT(ViewCenterChanged, StateChangeEvent<gpu::types::Number>);
 DECLARE_EVENT(ZoomChanged, StateChangeEvent<real>);
 DECLARE_EVENT(ViewMappingChanged, StateChangeEvent<gpu::types::ViewMapping>);

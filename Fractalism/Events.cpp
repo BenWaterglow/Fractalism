@@ -5,6 +5,7 @@ namespace fractalism::events {
   #define DEFINE_EVENT(name, ...) const wxEventTypeTag<tags::name##Tag::eventType> tags::name##Tag::tag(wxNewEventType())
 
   DEFINE_EVENT(NumberChanged);
+  DEFINE_EVENT(ViewChanged);
   DEFINE_EVENT(ViewCenterChanged);
   DEFINE_EVENT(ZoomChanged);
   DEFINE_EVENT(ViewMappingChanged);

@@ -52,6 +52,17 @@ public:
   void updateParameter();
 
   /**
+   * @brief Updates the view.
+   * 
+   * Eqivalent to @code
+   * updateCenter();
+   * updateViewMapping();
+   * updateZoom();
+   * @endcode
+   */
+  void updateView();
+
+  /**
    * @brief Updates the center of the view.
    */
   void updateCenter();
@@ -86,6 +97,14 @@ public:
    */
   void updateIterationsPerFrame();
 
+  /**
+   * @brief Returns the ViewWindowSettings for this window.
+   * @return The ViewWindowSettings for this window.
+   */
+  inline ViewWindowSettings& getSettings() {
+    return kernel.settings;
+  }
+
 private:
   gpu::opencl::KernelExecutor kernel;           ///< The OpenCL kernel executor.
   wxAuiManager auiManager;                      ///< Manager for the frame layout.
@@ -93,6 +112,11 @@ private:
   GLRenderCanvas& renderCanvas;                 ///< The OpenGL render canvas.
   controls::ViewspaceToolBar& viewspaceToolBar; ///< Toolbar for controlling the viewspace.
   controls::IterationToolBar& iterationToolBar; ///< Toolbar for controlling iterations.
+  
+  /**
+   * @brief Fired whenever the Viewspace is changed.
+   */
+  void onViewChanged();
 };
 } // namespace fractalism::ui
 

@@ -97,13 +97,26 @@ namespace fractalism::ui {
         .FloatingSize(width, height)
         .FloatingPosition(width * (i % gridSize), height * (i / gridSize)) // Stagger the floating windows
         .Float());
-      viewWindows.push_back(viewWindow);
       viewWindow->Bind(events::ParameterChanged::tag, [&viewWindows, &parameterToolBar](events::ParameterChanged::eventType& event) {
         for (ViewWindow* viewWindow : viewWindows) {
           viewWindow->updateParameter();
         }
         parameterToolBar.updateParameter();
       });
+      ViewWindowSettings& settings = viewWindow->getSettings();
+      for (ViewWindow *otherWindow : viewWindows) {
+        if (otherWindow->getSettings().space == settings.space) {
+          viewWindow->Bind(events::ViewChanged::tag, [otherWindow](events::ViewChanged::eventType& event) {
+            otherWindow->getSettings().view = event.getValue();
+            otherWindow->updateView();
+          });
+          otherWindow->Bind(events::ViewChanged::tag, [viewWindow](events::ViewChanged::eventType& event) {
+            viewWindow->getSettings().view = event.getValue();
+            viewWindow->updateView();
+          });
+        }
+      }
+      viewWindows.push_back(viewWindow);
     }
     
     parameterToolBar.Bind(events::ParameterChanged::tag, [&viewWindows](events::ParameterChanged::eventType& event) {
@@ -116,15 +129,15 @@ namespace fractalism::ui {
         viewWindow->updateNumberSystem();
       }
     });
-    renderSettingsToolBar.Bind(events::RenderDimensionsChanged::tag, [this](events::RenderDimensionsChanged::eventType& event) {
+    renderSettingsToolBar.Bind(events::RenderDimensionsChanged::tag, [&viewWindows](events::RenderDimensionsChanged::eventType& event) {
       App::get<gpu::opencl::ProgramManager>().updateResolution();
-      for (ViewWindow* viewWindow : this->viewWindows) {
+      for (ViewWindow* viewWindow : viewWindows) {
         viewWindow->updateRenderDimensions();
       }
     });
-    renderSettingsToolBar.Bind(events::ResolutionChanged::tag, [this](events::ResolutionChanged::eventType& event) {
+    renderSettingsToolBar.Bind(events::ResolutionChanged::tag, [&viewWindows](events::ResolutionChanged::eventType& event) {
       App::get<gpu::opencl::ProgramManager>().updateResolution();
-      for (ViewWindow* viewWindow : this->viewWindows) {
+      for (ViewWindow* viewWindow : viewWindows) {
         viewWindow->updateRenderDimensions();
       }
     });

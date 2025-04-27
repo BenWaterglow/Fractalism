@@ -1,10 +1,12 @@
 #include <Fractalism/UI/Controls/ViewspaceToolBar.hpp>
 
+#include <Fractalism/Events.hpp>
+
 namespace fractalism::ui::controls {
   namespace {
     namespace types = gpu::types;
   }
-  ViewspaceToolBar::ViewspaceToolBar(wxWindow & parent, types::Viewspace & viewspace) :
+  ViewspaceToolBar::ViewspaceToolBar(wxWindow& parent, types::Viewspace & viewspace) :
         wxAuiToolBar(&parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_TB_TEXT | wxAUI_TB_VERTICAL),
         view(viewspace),
         numberInput(*new HypercomplexNumberControl(*this, viewspace.center)),
@@ -16,6 +18,9 @@ namespace fractalism::ui::controls {
     AddControl(&viewMapping);
     AddLabel(zoom.GetId(), "Zoom");
     AddControl(&zoom);
+    numberInput.Bind(events::NumberChanged::tag, [this](events::NumberChanged::eventType& event) {
+      events::ViewCenterChanged::fire(*this, event.getValue());
+    });
     updateCenter();
     updateViewMapping();
     updateZoom();
