@@ -16,10 +16,6 @@ namespace fractalism {
  * rendering modes.
  */
 struct ViewWindowSettings {
-  static constexpr double zoom1x = 1.5;     ///< Default zoom level.
-  static constexpr double minZoom = 0.1;    ///< Minimum zoom level.
-  static constexpr double maxZoom = 1.0e16; ///< Maximum zoom level.
-
   static constexpr double minIterations = 1.0; ///< Minimum number of iterations.
   static constexpr double maxIterations = std::numeric_limits<cl_uint>::max(); ///< Maximum number of iterations.
 

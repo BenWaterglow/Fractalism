@@ -17,9 +17,6 @@ namespace fractalism {
  */
 struct Settings {
 public:
-  static constexpr double minIterations = 1.0;  ///< Minimum number of iterations.
-  static constexpr double maxIterations = std::numeric_limits<cl_uint>::max(); ///< Maximum number of iterations.
-
   options::NumberSystem numberSystem;                 ///< The number system setting.
   options::Dimensions renderDimensions;               ///< The render dimensions setting.
   cl::NDRange resolution;                             ///< The resolution setting.
