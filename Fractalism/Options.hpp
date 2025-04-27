@@ -45,9 +45,8 @@ inline constexpr const std::string name(const RenderMode renderMode) {
  * @brief Represents the space settings.
  */
 enum class Space : unsigned char {
-  phase = 1 << 0,          ///< Phase space.
-  dynamical = 1 << 1,      ///< Dynamical space.
-  both = phase | dynamical ///< Both phase and dynamical space.
+  phase,          ///< Phase space.
+  dynamical,      ///< Dynamical space.
 };
 
 /**
