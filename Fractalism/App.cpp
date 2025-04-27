@@ -17,7 +17,9 @@ namespace fractalism {
     // but we need it to free the SVM.
     wxAppConsole* instance = wxApp::GetInstance();
     wxApp::SetInstance(this);
-    gpu->kernelManager.freeSvm();
+    if (gpu) {
+      gpu->kernelManager.freeSvm();
+    }
     wxApp::SetInstance(instance);
     return wxApp::OnExit();
   }
