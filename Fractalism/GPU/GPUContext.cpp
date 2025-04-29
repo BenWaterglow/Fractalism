@@ -58,11 +58,40 @@ namespace fractalism::gpu {
         // TODO: check platform.getInfo<CL_PLATFORM_EXTENSIONS>()
         cl::Platform platform = cl::Platform::get();
 
-        std::vector<cl::Device> devices;
-        platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-        ctx.device = devices[0]; // TODO: Get proper device
+        cl_device_id deviceId = 0;
+        // Try to get the current GL context device
+        clGetGLContextInfoKHR_fn clGetGLContextInfo = reinterpret_cast<clGetGLContextInfoKHR_fn>(
+            clGetExtensionFunctionAddressForPlatform(platform(), "clGetGLContextInfoKHR"));
+        if (clGetGLContextInfo) {
+          cl_context_properties props[] = {
+            CL_CONTEXT_PLATFORM, (cl_context_properties)platform(),
+            0
+          };
+          clGetGLContextInfo(props, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_uint), &deviceId, nullptr);
+          if (deviceId) {
+            ctx.device = deviceId;
+          }
+        }
+        // If we couldn't get the proper device, use a bad and terrible fallback.
+        if (ctx.device()) {
+          ctx.clCtx = createContext(platform, ctx.device, ctx.glCtx, canvas);
+        } else {
+          std::vector<cl::Device> devices;
+          platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+          for (cl::Device& device : devices) {
+            try {
+              ctx.clCtx = createContext(platform, device, ctx.glCtx, canvas);
+              ctx.device = device;
+              break;
+            } catch (const cl::Error&) {
+              continue;
+            }
+          }
+          if (!ctx.device()) {
+            throw CLError("Could not find CL/GL compatible device");
+          }
+        }
 
-        ctx.clCtx = createContext(platform, ctx.device, ctx.glCtx, canvas);
         // TODO: verify SVM support
         ctx.maxMemAllocSize = ctx.device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
 
