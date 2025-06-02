@@ -31,6 +31,7 @@ namespace fractalism::ui {
           "GLRenderCanvas"),
         lastPoint(types::Coordinates::none) {
 
+    SetCursor(*wxCROSS_CURSOR);
     const auto clearLastPoint = [this](wxMouseEvent&) { setLastPoint(types::Coordinates::none); };
     Bind(wxEVT_ENTER_WINDOW, clearLastPoint);
     Bind(wxEVT_LEAVE_WINDOW, clearLastPoint);
